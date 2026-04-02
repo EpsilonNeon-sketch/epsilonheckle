@@ -4,2764 +4,339 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Epsilon Heckle | Play & Create</title>
+    <title>Epsilon Heckle - Free Games</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
-    <link rel="icon" href="./epsilon-heckle-logo.png" size="any">
-    <link rel="manifest" href="manifest.json">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap"
+    <link rel="manifest"  href="/manifest.json">
+    <link rel="icon" href="epsilon-heckle-logo.png"
+    <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Inter:wght@400;600&display=swap"
         rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'gaming': ['"Russo One"', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            red: '#E50914',
+                            dark: '#0B0B0B',
+                            gray: '#1A1A1A',
+                            light: '#E2E8F0'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root {
-            --roblox-red: #ff0000;
-            --dark-bg: #0a0a0a;
-            --card-bg: #1a1a1a;
+        /* Custom Scrollbar for the gaming vibe */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0B0B0B;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #E50914;
         }
 
         body {
-            background-color: var(--dark-bg);
-            color: white;
-            font-family: 'Inter', sans-serif;
+            background-color: #0B0B0B;
+            color: #E2E8F0;
         }
 
-        #loading-screen {
-            position: fixed;
-            inset: 0;
-            background: var(--dark-bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease;
+        .glow-hover:hover {
+            box-shadow: 0 0 20px rgba(229, 9, 20, 0.4);
+            border-color: #E50914;
         }
 
-        #loading-screen.fade-out {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        #loading-logo {
-            width: 150px;
-            height: 150px;
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #E50914;
             border-radius: 50%;
-            object-fit: cover;
-            animation: pulse-glow 2s ease-in-out infinite;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
         }
 
-        .heading-font {
-            font-family: 'Orbitron', sans-serif;
-        }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
 
-        .red-glow:hover {
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
-            border-color: var(--roblox-red);
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #111;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: var(--roblox-red);
-        }
-
-        #game-frame {
-            background: #fff;
-            width: 100%;
-            height: 500px;
-            border: none;
-            border-radius: 8px;
-        }
-
-        .tab-active {
-            border-bottom: 3px solid var(--roblox-red);
-            color: var(--roblox-red);
-        }
-
-        @keyframes float {
-
-            0%,
             100% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-
-        .float-animation {
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes pulse-glow {
-
-            0%,
-            100% {
-                box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
-            }
-
-            50% {
-                box-shadow: 0 0 40px rgba(255, 0, 0, 0.6);
-            }
-        }
-
-        .pulse-glow {
-            animation: pulse-glow 2s ease-in-out infinite;
-        }
-
-        .gradient-text {
-            background: linear-gradient(135deg, #ff0000, #ff6b6b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* Studio / Engine Styles */
-        .viewport-object {
-            position: absolute;
-            cursor: move;
-            user-select: none;
-            transition: outline 0.1s ease;
-        }
-
-        .viewport-object.selected {
-            outline: 3px solid white;
-            outline-offset: 2px;
-            z-index: 10;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
-        }
-
-        .grid-bg {
-            background-size: 25px 25px;
-            background-image:
-                linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-        }
-
-        canvas {
-            display: block;
-            width: 100% !important;
-            height: 100% !important;
-        }
-
-        /* Camera Gizmo Styles */
-        #camera-gizmo {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            width: 100px;
-            height: 100px;
-            z-index: 100;
-        }
-
-        .gizmo-btn {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 1px solid #444;
-            color: white;
-            font-size: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .gizmo-btn:hover {
-            background: rgba(255, 0, 0, 0.3);
-            border-color: var(--roblox-red);
-        }
-
-        .gizmo-btn.active {
-            background: rgba(255, 0, 0, 0.5);
-            border-color: var(--roblox-red);
-        }
-
-        .gizmo-top {
-            top: 0;
-            left: 35px;
-        }
-
-        .gizmo-front {
-            bottom: 35px;
-            left: 0;
-        }
-
-        .gizmo-right {
-            bottom: 35px;
-            right: 0;
-        }
-
-        .gizmo-perspective {
-            bottom: 0;
-            left: 35px;
-        }
-
-        /* Transform Controls */
-        #transform-controls {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            display: flex;
-            gap: 5px;
-            z-index: 100;
-        }
-
-        .transform-btn {
-            width: 35px;
-            height: 35px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 1px solid #444;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-
-        .transform-btn:hover {
-            background: rgba(255, 0, 0, 0.3);
-            border-color: var(--roblox-red);
-        }
-
-        .transform-btn.active {
-            background: rgba(255, 0, 0, 0.5);
-            border-color: var(--roblox-red);
-        }
-
-        /* Asset Browser */
-        .asset-item {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid #333;
-            border-radius: 4px;
-            padding: 8px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .asset-item:hover {
-            background: rgba(255, 0, 0, 0.1);
-            border-color: var(--roblox-red);
-        }
-
-        .asset-icon {
-            width: 30px;
-            height: 30px;
-            background: #222;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Mobile Menu Styles */
-        .mobile-menu {
-            position: fixed;
-            top: 0;
-            right: -100%;
-            width: 70%;
-            max-width: 300px;
-            height: 100vh;
-            background: rgba(10, 10, 10, 0.98);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            transition: right 0.3s ease;
-            padding: 80px 20px 20px;
-            overflow-y: auto;
-        }
-
-        .mobile-menu.active {
-            right: 0;
-        }
-
-        .mobile-menu-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-            display: none;
-        }
-
-        .mobile-menu-overlay.active {
-            display: block;
-        }
-
-        /* Auth Dialog Styles */
-        .auth-dialog {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            z-index: 2000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .auth-dialog.active {
-            display: flex;
-        }
-
-        .auth-content {
-            background: #0a0a0a;
-            border: 1px solid #333;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 400px;
-            padding: 32px;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Publish Dialog Styles */
-        .publish-dialog {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            z-index: 2000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .publish-dialog.active {
-            display: flex;
-        }
-
-        .publish-content {
-            background: #0a0a0a;
-            border: 1px solid #333;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            padding: 24px;
-            animation: slideUp 0.3s ease;
-        }
-
-        .thumbnail-preview {
-            width: 100px;
-            height: 100px;
-            background: #111;
-            border: 2px dashed #444;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .thumbnail-preview:hover {
-            border-color: var(--roblox-red);
-            background: #1a0a0a;
-        }
-
-        .thumbnail-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .thumbnail-preview .remove-btn {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            background: rgba(255, 0, 0, 0.8);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        .thumbnail-preview:hover .remove-btn {
-            opacity: 1;
-        }
-
-        /* Profile Image Upload */
-        .profile-image-container {
-            position: relative;
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 20px;
-        }
-
-        .profile-image {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--roblox-red);
-        }
-
-        .profile-image-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.2s;
-            cursor: pointer;
-        }
-
-        .profile-image-container:hover .profile-image-overlay {
-            opacity: 1;
-        }
-
-        /* Mobile adjustments */
-        @media (max-width: 768px) {
-            #viewport-container {
-                height: 300px !important;
-            }
-
-            #transform-controls {
-                top: 10px;
-                left: 10px;
-            }
-
-            .transform-btn {
-                width: 30px;
-                height: 30px;
-            }
-
-            #camera-gizmo {
-                width: 80px;
-                height: 80px;
-                bottom: 10px;
-                left: 10px;
-            }
-
-            .gizmo-btn {
-                width: 25px;
-                height: 25px;
-                font-size: 8px;
-            }
-
-            .gizmo-top {
-                top: 0;
-                left: 27.5px;
-            }
-
-            .gizmo-front {
-                bottom: 27.5px;
-                left: 0;
-            }
-
-            .gizmo-right {
-                bottom: 27.5px;
-                right: 0;
-            }
-
-            .gizmo-perspective {
-                bottom: 0;
-                left: 27.5px;
-            }
-
-            .page-content {
-                padding: 1rem;
-            }
-
-            #page-engine .flex-grow {
-                min-height: 0;
-            }
-
-            .grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-4 {
-                grid-template-columns: repeat(1, minmax(0, 1fr));
-            }
-
-            .grid.grid-cols-1.md\:grid-cols-3 {
-                grid-template-columns: repeat(1, minmax(0, 1fr));
-            }
-
-            .publish-content {
-                padding: 16px;
-            }
-
-            .auth-content {
-                padding: 24px;
+                transform: rotate(360deg);
             }
         }
     </style>
 </head>
 
-<body class="min-h-screen flex flex-col">
+<body class="font-body antialiased flex flex-col min-h-screen">
 
-    <!-- Loading Screen -->
-    <div id="loading-screen">
-        <img id="loading-logo" src="./epsilon-heckle-logo.png" alt="Epsilon Heckle">
-    </div>
-
-    <!-- Top Nav -->
-    <nav
-        class="bg-black/95 backdrop-blur-sm border-b border-zinc-800 px-4 py-3 flex justify-between items-center sticky top-0 z-50 shadow-lg shadow-red-900/10">
-        <div class="flex items-center gap-3">
-            <div
-                class="w-8 h-8 bg-gradient-to-br from-red-600 to-red-800 rounded-lg rotate-45 flex items-center justify-center pulse-glow">
-                <span class="text-white font-bold -rotate-45 text-lg italic">E</span>
-            </div>
-            <h1 class="heading-font text-lg md:text-2xl font-black tracking-tighter">EPSILON <span
-                    class="gradient-text">HECKLE</span></h1>
-        </div>
-
-        <!-- Desktop Navigation -->
-        <div class="hidden md:flex gap-4 lg:gap-8 text-sm font-semibold uppercase tracking-widest">
-            <button onclick="showPage('discover')"
-                class="nav-btn hover:text-red-500 transition flex items-center gap-2">
-                <i data-lucide="compass" class="w-4 h-4"></i> Discover
-            </button>
-            <button onclick="showPage('engine')" class="nav-btn hover:text-red-500 transition flex items-center gap-2">
-                <i data-lucide="code-2" class="w-4 h-4"></i> Engine
-            </button>
-            <button onclick="showPage('library')" class="nav-btn hover:text-red-500 transition flex items-center gap-2">
-                <i data-lucide="library" class="w-4 h-4"></i> My Games
-            </button>
-            <button onclick="showPage('settings')"
-                class="nav-btn hover:text-red-500 transition flex items-center gap-2">
-                <i data-lucide="settings" class="w-4 h-4"></i> Settings
-            </button>
-        </div>
-
-        <!-- User Info -->
-        <div class="flex items-center gap-2 md:gap-4">
-            <div
-                class="hidden md:flex bg-zinc-900 px-4 py-2 rounded-full border border-zinc-700 text-xs items-center gap-2 hover:border-green-500 transition">
-                <i data-lucide="activity" class="w-3 h-3 text-green-500"></i>
-                <span class="font-semibold">1,337 Online</span>
-            </div>
-            <div id="user-profile-btn" onclick="openUserMenu()"
-                class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-zinc-800 to-zinc-900 border-2 border-zinc-700 hover:border-red-500 transition cursor-pointer flex items-center justify-center relative">
-                <i data-lucide="user" class="w-4 h-4 md:w-5 md:h-5 text-zinc-400"></i>
-                <span id="user-avatar" class="absolute inset-0 rounded-full object-cover hidden"></span>
+    <!-- Navigation -->
+    <nav class="bg-brand-gray border-b border-brand-red/30 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center gap-2 cursor-pointer">
+                        <i data-lucide="gamepad-2" class="text-brand-red w-8 h-8"></i>
+                        <span class="font-gaming text-2xl tracking-wider text-white uppercase">Epsilon <span
+                                class="text-brand-red">Heckle</span></span>
+                    </div>
+                    <div class="hidden md:block ml-10">
+                        <div class="flex items-baseline space-x-4">
+                            <a href="#"
+                                class="bg-brand-red text-white px-3 py-2 rounded-md text-sm font-bold uppercase tracking-wide">Home</a>
+                            <a href="#"
+                                class="text-gray-300 hover:text-brand-red hover:bg-black px-3 py-2 rounded-md text-sm font-bold uppercase tracking-wide transition-colors">New
+                                Releases</a>
+                            <a href="#"
+                                class="text-gray-300 hover:text-brand-red hover:bg-black px-3 py-2 rounded-md text-sm font-bold uppercase tracking-wide transition-colors">Top
+                                Rated</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="relative hidden sm:block">
+                        <input type="text" placeholder="Search games..."
+                            class="bg-black border border-gray-700 text-white rounded-full py-1 px-4 pl-10 focus:outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red transition-all">
+                        <i data-lucide="search" class="absolute left-3 top-1.5 text-gray-400 w-4 h-4"></i>
+                    </div>
+                    <button class="text-gray-300 hover:text-brand-red transition-colors">
+                        <i data-lucide="user" class="w-6 h-6"></i>
+                    </button>
+                </div>
             </div>
         </div>
-
-        <!-- Mobile Menu Button -->
-        <button id="mobile-menu-btn"
-            class="md:hidden flex items-center justify-center w-10 h-10 rounded-lg bg-zinc-900">
-            <i data-lucide="menu" class="w-5 h-5"></i>
-        </button>
     </nav>
 
-    <!-- User Dropdown Menu -->
-    <div id="user-dropdown"
-        class="hidden absolute top-16 right-4 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl z-50 min-w-[200px]">
-        <div class="p-3 border-b border-zinc-800">
-            <p id="dropdown-username" class="font-semibold text-sm">Guest</p>
-            <p id="dropdown-email" class="text-xs text-zinc-500">Not logged in</p>
+    <!-- Hero Section -->
+    <div class="relative bg-black h-[50vh] min-h-[400px] flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0">
+            <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1920&q=80"
+                alt="Hero Background" class="w-full h-full object-cover opacity-40">
+            <div class="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-brand-dark via-brand-dark/80 to-transparent"></div>
         </div>
-        <div class="p-1">
-            <button id="login-btn" onclick="openAuthDialog('login')"
-                class="w-full text-left px-3 py-2 text-sm hover:bg-zinc-800 rounded flex items-center gap-2">
-                <i data-lucide="log-in" class="w-4 h-4"></i> Sign In
-            </button>
-            <button id="signup-btn" onclick="openAuthDialog('signup')"
-                class="w-full text-left px-3 py-2 text-sm hover:bg-zinc-800 rounded flex items-center gap-2">
-                <i data-lucide="user-plus" class="w-4 h-4"></i> Sign Up
-            </button>
-            <button id="logout-btn" onclick="logout()"
-                class="hidden w-full text-left px-3 py-2 text-sm hover:bg-zinc-800 rounded flex items-center gap-2 text-red-500">
-                <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
-            </button>
-        </div>
-    </div>
-
-    <!-- Mobile Menu Overlay -->
-    <div id="mobile-menu-overlay" class="mobile-menu-overlay"></div>
-
-    <!-- Mobile Menu -->
-    <div id="mobile-menu" class="mobile-menu">
-        <div class="flex flex-col gap-6">
-            <button onclick="showPage('discover'); closeMobileMenu();"
-                class="flex items-center gap-3 text-lg font-semibold hover:text-red-500 transition">
-                <i data-lucide="compass" class="w-5 h-5"></i> Discover
-            </button>
-            <button onclick="showPage('engine'); closeMobileMenu();"
-                class="flex items-center gap-3 text-lg font-semibold hover:text-red-500 transition">
-                <i data-lucide="code-2" class="w-5 h-5"></i> Engine
-            </button>
-            <button onclick="showPage('library'); closeMobileMenu();"
-                class="flex items-center gap-3 text-lg font-semibold hover:text-red-500 transition">
-                <i data-lucide="library" class="w-5 h-5"></i> My Games
-            </button>
-            <button onclick="showPage('settings'); closeMobileMenu();"
-                class="flex items-center gap-3 text-lg font-semibold hover:text-red-500 transition">
-                <i data-lucide="settings" class="w-5 h-5"></i> Settings
-            </button>
-
-            <div class="border-t border-zinc-800 pt-6">
-                <div
-                    class="bg-zinc-900 px-4 py-2 rounded-full border border-zinc-700 text-sm flex items-center gap-2 mb-4">
-                    <i data-lucide="activity" class="w-4 h-4 text-green-500"></i>
-                    <span class="font-semibold">1,337 Online</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <div
-                        class="w-10 h-10 rounded-full bg-gradient-to-br from-zinc-800 to-zinc-900 border-2 border-zinc-700 flex items-center justify-center">
-                        <i data-lucide="user" class="w-5 h-5 text-zinc-400"></i>
-                    </div>
-                    <div>
-                        <p id="mobile-username" class="text-sm font-semibold">Guest</p>
-                        <button onclick="openAuthDialog('login'); closeMobileMenu();"
-                            class="text-xs text-red-500 hover:text-red-400">Sign In</button>
-                    </div>
-                </div>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div class="max-w-2xl">
+                <span
+                    class="inline-block py-1 px-2 rounded bg-brand-red/20 text-brand-red border border-brand-red/50 text-xs font-bold uppercase tracking-widest mb-4">Featured
+                    Game</span>
+                <h1 class="text-5xl md:text-7xl font-gaming text-white mb-4 uppercase leading-none">Cyber <br /><span
+                        class="text-brand-red">Syndicate</span></h1>
+                <p class="text-gray-400 text-lg mb-8 max-w-lg">Dive into the neon-lit streets of Neo-Tokyo. Hack, slash,
+                    and shoot your way through mega-corporations in this free-to-play action RPG.</p>
+                <button
+                    class="bg-brand-red hover:bg-red-700 text-white font-gaming py-3 px-8 rounded-sm text-xl uppercase tracking-wider transition-all transform hover:scale-105 flex items-center gap-2 glow-hover">
+                    <i data-lucide="play" class="w-5 h-5 fill-current"></i> Play Now Free
+                </button>
             </div>
         </div>
     </div>
 
     <!-- Main Content -->
-    <main class="flex-grow p-4 md:p-6 max-w-7xl mx-auto w-full">
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
 
-        <!-- DISCOVER PAGE -->
-        <section id="page-discover" class="page-content">
-            <div class="mb-6 md:mb-10">
-                <div class="flex items-center gap-3 mb-2">
-                    <i data-lucide="sparkles" class="w-6 h-6 md:w-8 md:h-8 text-red-500"></i>
-                    <h2 class="text-2xl md:text-4xl font-black gradient-text">Featured Experiences</h2>
-                </div>
-                <p class="text-zinc-400 flex items-center gap-2 text-sm md:text-base">
-                    <i data-lucide="shield-check" class="w-3 h-3 md:w-4 md:h-4"></i>
-                    Curated by the Epsilon Dev Team
-                </p>
-            </div>
-
-            <div id="discover-games" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                <!-- Game cards will be dynamically loaded here -->
-            </div>
-        </section>
-
-        <!-- ENGINE PAGE -->
-        <section id="page-engine" class="page-content hidden">
-            <div class="flex flex-col gap-4 h-auto md:h-[750px]">
-                <!-- Studio Toolbar -->
-                <div class="bg-zinc-900/80 p-3 md:p-4 rounded-xl border border-zinc-800 backdrop-blur-md">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div class="flex items-center gap-2 md:gap-4">
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="layout" class="w-5 h-5 md:w-6 md:h-6 text-red-500"></i>
-                                <h2 class="text-lg md:text-xl font-black italic">EPSILON <span
-                                        class="gradient-text">STUDIO</span></h2>
-                            </div>
-                            <div class="hidden md:block h-6 w-px bg-zinc-700"></div>
-                            <div class="flex flex-wrap gap-2">
-                                <button onclick="add3DObject('box')"
-                                    class="bg-zinc-800 hover:bg-zinc-700 p-2 rounded text-xs flex items-center gap-1 transition border border-zinc-700">
-                                    <i data-lucide="box" class="w-4 h-4"></i> <span class="hidden sm:inline">Add
-                                        Cube</span>
-                                </button>
-                                <button onclick="add3DObject('sphere')"
-                                    class="bg-zinc-800 hover:bg-zinc-700 p-2 rounded text-xs flex items-center gap-1 transition border border-zinc-700">
-                                    <i data-lucide="circle" class="w-4 h-4"></i> <span class="hidden sm:inline">Add
-                                        Sphere</span>
-                                </button>
-                                <button onclick="add3DObject('torus')"
-                                    class="bg-zinc-800 hover:bg-zinc-700 p-2 rounded text-xs flex items-center gap-1 transition border border-zinc-700">
-                                    <i data-lucide="donut" class="w-4 h-4"></i> <span class="hidden sm:inline">Add
-                                        Torus</span>
-                                </button>
-                                <button onclick="add3DObject('player')"
-                                    class="bg-zinc-800 hover:bg-zinc-700 p-2 rounded text-xs flex items-center gap-1 transition border border-zinc-700 text-red-400">
-                                    <i data-lucide="user-plus" class="w-4 h-4"></i> <span class="hidden sm:inline">Add
-                                        Player</span>
-                                </button>
-                                <button onclick="document.getElementById('mesh-import-input').click()"
-                                    class="bg-zinc-800 hover:bg-zinc-700 p-2 rounded text-xs flex items-center gap-1 transition border border-zinc-700 text-yellow-400">
-                                    <i data-lucide="upload" class="w-4 h-4"></i> <span class="hidden sm:inline">Import
-                                        Mesh</span>
-                                </button>
-                                <input type="file" id="mesh-import-input" accept=".json"
-                                    onchange="handleMeshImport(this)" class="hidden">
-                            </div>
-                        </div>
-                        <div class="flex gap-2 md:gap-3 w-full md:w-auto">
-                            <input id="game-title" type="text" placeholder="Project Name..."
-                                class="bg-black border border-zinc-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-red-600 transition flex-grow md:w-40">
-                            <button onclick="runVisualGame()"
-                                class="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 px-3 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition shadow-lg shadow-green-900/20">
-                                <i data-lucide="play" class="w-4 h-4 text-white"></i> <span
-                                    class="hidden sm:inline">PLAY</span>
-                            </button>
-                            <button onclick="saveVisualProject()"
-                                class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-3 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition shadow-lg shadow-red-900/20">
-                                <i data-lucide="save" class="w-4 h-4"></i> <span class="hidden sm:inline">SAVE</span>
-                            </button>
-                            <button onclick="openPublishDialog()"
-                                class="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 px-3 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition shadow-lg shadow-purple-900/20">
-                                <i data-lucide="rocket" class="w-4 h-4"></i> <span
-                                    class="hidden sm:inline">PUBLISH</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex flex-col md:flex-row gap-4 overflow-hidden flex-grow">
-                    <!-- Left Panel (Hierarchy & Assets) -->
-                    <div class="w-full md:w-64 flex flex-col gap-4">
-                        <!-- Hierarchy -->
-                        <div
-                            class="bg-zinc-900/30 border border-zinc-800 rounded-xl p-3 md:p-4 flex flex-col gap-2 flex-grow">
-                            <h3
-                                class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                <i data-lucide="layers" class="w-3 h-3"></i> Hierarchy
-                            </h3>
-                            <div id="hierarchy-list"
-                                class="flex flex-col gap-1 overflow-y-auto custom-scrollbar flex-grow">
-                                <!-- Objects list -->
-                            </div>
-                        </div>
-
-                        <!-- Asset Browser -->
-                        <div class="bg-zinc-900/30 border border-zinc-800 rounded-xl p-3 md:p-4">
-                            <h3
-                                class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                <i data-lucide="folder" class="w-3 h-3"></i> Assets
-                            </h3>
-                            <div class="overflow-y-auto custom-scrollbar" style="max-height: 200px;">
-                                <div class="asset-item" onclick="addAsset('texture')">
-                                    <div class="asset-icon">🖼️</div>
-                                    <div class="text-xs">Red Texture</div>
-                                </div>
-                                <div class="asset-item" onclick="addAsset('material')">
-                                    <div class="asset-icon">🎨</div>
-                                    <div class="text-xs">Metal Material</div>
-                                </div>
-                                <div class="asset-item" onclick="addAsset('model')">
-                                    <div class="asset-icon">📦</div>
-                                    <div class="text-xs">Tree Model</div>
-                                </div>
-                                <div class="asset-item" onclick="addAsset('sound')">
-                                    <div class="asset-icon">🔊</div>
-                                    <div class="text-xs">Laser Sound</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Viewport -->
-                    <div id="viewport-container"
-                        class="flex-grow bg-zinc-950 border border-zinc-800 rounded-xl relative overflow-hidden grid-bg flex items-center justify-center">
-                        <div id="editor-viewport" class="w-full h-full relative" onclick="selectObject(null)">
-                            <!-- Visual objects -->
-                        </div>
-
-                        <!-- Transform Controls -->
-                        <div id="transform-controls">
-                            <div class="transform-btn active" id="move-tool" onclick="setTransformMode('move')"
-                                title="Move (G)">
-                                <i data-lucide="move" class="w-4 h-4"></i>
-                            </div>
-                            <div class="transform-btn" id="rotate-tool" onclick="setTransformMode('rotate')"
-                                title="Rotate (R)">
-                                <i data-lucide="rotate-cw" class="w-4 h-4"></i>
-                            </div>
-                            <div class="transform-btn" id="scale-tool" onclick="setTransformMode('scale')"
-                                title="Scale (S)">
-                                <i data-lucide="maximize-2" class="w-4 h-4"></i>
-                            </div>
-                        </div>
-
-                        <!-- Camera Gizmo -->
-                        <div id="camera-gizmo">
-                            <div class="gizmo-btn gizmo-top" onclick="setCameraView('top')" title="Top View (7)">TOP
-                            </div>
-                            <div class="gizmo-btn gizmo-front" onclick="setCameraView('front')" title="Front View (1)">
-                                FRONT</div>
-                            <div class="gizmo-btn gizmo-right" onclick="setCameraView('right')" title="Right View (3)">
-                                RIGHT</div>
-                            <div class="gizmo-btn gizmo-perspective active" onclick="setCameraView('perspective')"
-                                title="Perspective (5)">PERSP</div>
-                        </div>
-
-                        <div
-                            class="absolute bottom-4 right-4 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] text-zinc-500 border border-zinc-800">
-                            Viewport: 100% x 100%
-                        </div>
-                    </div>
-
-                    <!-- Right Panel (Inspector & Scene Settings) -->
-                    <div class="w-full md:w-72 flex flex-col gap-4">
-                        <!-- Inspector -->
-                        <div
-                            class="bg-zinc-900/30 border border-zinc-800 rounded-xl p-3 md:p-4 flex flex-col gap-4 flex-grow">
-                            <h3
-                                class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                <i data-lucide="sliders" class="w-3 h-3"></i> Inspector
-                            </h3>
-                            <div id="inspector-panel"
-                                class="flex flex-col gap-4 overflow-y-auto custom-scrollbar flex-grow">
-                                <div class="text-zinc-600 text-xs italic text-center mt-10">Select an object to edit
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Scene Settings -->
-                        <div class="bg-zinc-900/30 border border-zinc-800 rounded-xl p-3 md:p-4">
-                            <h3
-                                class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                <i data-lucide="settings" class="w-3 h-3"></i> Scene Settings
-                            </h3>
-                            <div class="space-y-3">
-                                <div>
-                                    <label
-                                        class="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Background
-                                        Color</label>
-                                    <div class="flex gap-2 mt-1">
-                                        <input type="color" value="#050505" id="bg-color"
-                                            onchange="updateSceneBackground(this.value)"
-                                            class="w-10 h-8 bg-black border border-zinc-800 rounded cursor-pointer p-1">
-                                        <input type="text" value="#050505" id="bg-color-text"
-                                            onchange="updateSceneBackground(this.value)"
-                                            class="flex-grow bg-black border border-zinc-800 rounded px-2 py-1 text-[11px] outline-none focus:border-red-500 transition">
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Ambient
-                                        Light</label>
-                                    <input type="range" min="0" max="100" value="50" id="ambient-light"
-                                        onchange="updateAmbientLight(this.value)" class="w-full mt-1">
-                                </div>
-                                <div>
-                                    <label class="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Grid
-                                        Size</label>
-                                    <select id="grid-size" onchange="updateGridSize(this.value)"
-                                        class="w-full bg-black border border-zinc-800 rounded px-2 py-1 text-[11px] outline-none focus:border-red-500 transition mt-1">
-                                        <option value="10">10x10</option>
-                                        <option value="20" selected>20x20</option>
-                                        <option value="50">50x50</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label
-                                        class="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Background
-                                        Music</label>
-                                    <div class="flex flex-col gap-2 mt-1">
-                                        <input type="file" id="bg-music-input" accept="audio/*"
-                                            onchange="handleBackgroundMusic(this)" class="hidden">
-                                        <button onclick="document.getElementById('bg-music-input').click()"
-                                            class="w-full bg-black border border-zinc-800 rounded px-2 py-1 text-[11px] hover:border-red-500 transition flex items-center justify-between">
-                                            <span id="bg-music-name" class="truncate max-w-[150px]">None Selected</span>
-                                            <i data-lucide="music" class="w-3 h-3 text-zinc-500"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- LIBRARY PAGE -->
-        <section id="page-library" class="page-content hidden">
-            <div class="flex items-center gap-3 mb-6 md:mb-8">
-                <i data-lucide="folder-open" class="w-6 h-6 md:w-8 md:h-8 text-red-500"></i>
-                <h2 class="text-2xl md:text-4xl font-black italic gradient-text">MY CREATIONS</h2>
-            </div>
-            <div id="library-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                <!-- Projects will load here -->
-            </div>
-        </section>
-
-        <!-- SETTINGS PAGE -->
-        <section id="page-settings" class="page-content hidden">
-            <div class="flex items-center gap-3 mb-6 md:mb-8">
-                <i data-lucide="settings" class="w-6 h-6 md:w-8 md:h-8 text-red-500"></i>
-                <h2 class="text-2xl md:text-4xl font-black italic gradient-text">ACCOUNT SETTINGS</h2>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Profile Section -->
-                <div class="lg:col-span-1">
-                    <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
-                        <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                            <i data-lucide="user" class="w-5 h-5 text-red-500"></i> Profile
-                        </h3>
-                        <div class="profile-image-container">
-                            <img id="settings-profile-image" src="" alt="Profile" class="profile-image">
-                            <div class="profile-image-overlay"
-                                onclick="document.getElementById('profile-image-input').click()">
-                                <i data-lucide="camera" class="w-6 h-6 text-white"></i>
-                            </div>
-                            <input type="file" id="profile-image-input" accept="image/*"
-                                onchange="handleProfileImage(this)" class="hidden">
-                        </div>
-                        <div class="text-center">
-                            <h4 id="settings-username" class="font-bold text-lg mb-1">Guest</h4>
-                            <p id="settings-email" class="text-sm text-zinc-500">Not logged in</p>
-                        </div>
-                        <div class="mt-6 space-y-2">
-                            <div class="flex justify-between text-sm">
-                                <span class="text-zinc-500">Member Since</span>
-                                <span id="settings-joined">-</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-zinc-500">Games Created</span>
-                                <span id="settings-games">0</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Settings Section -->
-                <div class="lg:col-span-2 space-y-6">
-                    <!-- Account Settings -->
-                    <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
-                        <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                            <i data-lucide="user-cog" class="w-5 h-5 text-red-500"></i> Account Settings
-                        </h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">Display
-                                    Name</label>
-                                <input type="text" id="settings-display-name"
-                                    class="w-full mt-2 bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500 transition"
-                                    placeholder="Enter your display name">
-                            </div>
-                            <div>
-                                <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">Bio</label>
-                                <textarea id="settings-bio" rows="3"
-                                    class="w-full mt-2 bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500 transition resize-none"
-                                    placeholder="Tell us about yourself..."></textarea>
-                            </div>
-                            <button onclick="updateAccountSettings()"
-                                class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-6 py-3 rounded-lg font-bold transition flex items-center gap-2">
-                                <i data-lucide="save" class="w-5 h-5"></i> Save Changes
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Privacy Settings -->
-                    <div class="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
-                        <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                            <i data-lucide="shield" class="w-5 h-5 text-red-500"></i> Privacy
-                        </h3>
-                        <div class="space-y-4">
-                            <label class="flex items-center justify-between cursor-pointer">
-                                <span class="text-sm">Profile Public</span>
-                                <input type="checkbox" id="settings-public-profile"
-                                    class="w-5 h-5 text-red-600 bg-zinc-800 border-zinc-600 rounded focus:ring-red-500">
-                            </label>
-                            <label class="flex items-center justify-between cursor-pointer">
-                                <span class="text-sm">Show Email</span>
-                                <input type="checkbox" id="settings-show-email"
-                                    class="w-5 h-5 text-red-600 bg-zinc-800 border-zinc-600 rounded focus:ring-red-500">
-                            </label>
-                            <label class="flex items-center justify-between cursor-pointer">
-                                <span class="text-sm">Allow Messages</span>
-                                <input type="checkbox" id="settings-allow-messages"
-                                    class="w-5 h-5 text-red-600 bg-zinc-800 border-zinc-600 rounded focus:ring-red-500">
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Danger Zone -->
-                    <div class="bg-red-950/20 border border-red-900/50 rounded-xl p-6">
-                        <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-red-500">
-                            <i data-lucide="alert-triangle" class="w-5 h-5"></i> Danger Zone
-                        </h3>
-                        <div class="space-y-4">
-                            <button onclick="openChangePasswordDialog()"
-                                class="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2">
-                                <i data-lucide="key" class="w-4 h-4"></i> Change Password
-                            </button>
-                            <button onclick="logout()"
-                                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2">
-                                <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
-                            </button>
-                            <button onclick="deleteAccount()"
-                                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i> Delete Account
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- FULLSCREEN GAME VIEW -->
-        <section id="page-player" class="page-content hidden">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 gap-4">
-                <button onclick="showPage('discover')"
-                    class="text-zinc-500 hover:text-white flex items-center gap-2 transition group">
-                    <i data-lucide="arrow-left" class="w-5 h-5 group-hover:-translate-x-1 transition"></i> Back to Hub
-                </button>
-                <h2 id="current-playing-title" class="text-xl md:text-2xl font-bold flex items-center gap-2">
-                    <i data-lucide="gamepad-2" class="w-5 h-5 md:w-6 md:h-6 text-red-500"></i>
-                    <span>Playing Game</span>
+        <!-- API Controls / Filters -->
+        <div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-4 border-b border-gray-800 pb-4">
+            <div>
+                <h2 class="text-3xl font-gaming uppercase text-white mb-2 flex items-center gap-2">
+                    <i data-lucide="library" class="text-brand-red"></i> Game Library
                 </h2>
-                <button onclick="toggleFullscreen()"
-                    class="bg-zinc-800 p-3 rounded-lg hover:bg-zinc-700 transition flex items-center gap-2">
-                    <i data-lucide="maximize" class="w-5 h-5"></i>
-                </button>
+                <p class="text-sm text-gray-500">Connected to FreeToGame API v1.0</p>
             </div>
-            <div class="bg-white rounded-xl overflow-hidden shadow-2xl shadow-red-900/20">
-                <iframe id="game-viewport" class="w-full h-[400px] md:h-[600px] border-none"></iframe>
+            <div class="flex gap-2 overflow-x-auto pb-2 w-full md:w-auto" id="category-filters">
+                <!-- Rendered via JS -->
             </div>
-            <div
-                class="mt-4 md:mt-6 p-4 md:p-6 bg-gradient-to-r from-zinc-900 to-zinc-950 rounded-xl border border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4 shadow-lg">
-                <div class="flex items-center gap-6">
-                    <button class="flex items-center gap-2 hover:text-green-500 transition group">
-                        <i data-lucide="thumbs-up" class="w-5 h-5 group-hover:scale-110 transition"></i>
-                        <span class="text-sm font-bold">12k</span>
-                    </button>
-                    <button class="flex items-center gap-2 hover:text-red-500 transition group">
-                        <i data-lucide="thumbs-down" class="w-5 h-5 group-hover:scale-110 transition"></i>
-                        <span class="text-sm font-bold">203</span>
-                    </button>
-                </div>
-                <button
-                    class="bg-gradient-to-r from-red-600 to-red-700 px-6 py-3 rounded-full font-bold hover:scale-105 transition flex items-center gap-2 shadow-lg">
-                    <i data-lucide="star" class="w-5 h-5"></i> Favorite
-                </button>
-            </div>
-        </section>
+        </div>
+
+        <!-- Status Indicator -->
+        <div id="api-status"
+            class="mb-6 flex items-center gap-2 text-sm font-mono text-green-500 bg-green-500/10 inline-block px-3 py-1 rounded border border-green-500/30 hidden">
+            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div> API Connected successfully.
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="flex flex-col items-center justify-center py-20">
+            <div class="loader mb-4"></div>
+            <p class="text-brand-red font-gaming tracking-widest animate-pulse">FETCHING DATA...</p>
+        </div>
+
+        <!-- Game Grid -->
+        <div id="game-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 hidden">
+            <!-- Cards rendered via JS -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-gray-500">
+            <i data-lucide="ghost" class="w-16 h-16 mb-4 opacity-50"></i>
+            <p class="text-xl font-gaming uppercase">No games found in this category.</p>
+        </div>
 
     </main>
 
-    <footer class="p-4 md:p-8 border-t border-zinc-900 text-center text-zinc-600 text-xs">
-        <div class="flex items-center justify-center gap-2 mb-2">
-            <i data-lucide="zap" class="w-4 h-4 text-red-600"></i>
-            <p class="font-semibold">&copy; 2026 Epsilon Heckle Labs. Stay edgy.</p>
+    <!-- Footer -->
+    <footer class="bg-brand-gray border-t border-gray-800 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center gap-2 mb-4 md:mb-0">
+                <i data-lucide="gamepad-2" class="text-brand-red w-6 h-6"></i>
+                <span class="font-gaming text-xl text-white uppercase">Epsilon <span
+                        class="text-brand-red">Heckle</span></span>
+            </div>
+            <p class="text-gray-500 text-sm">© 2023 Epsilon Heckle Demo. Built for API Testing.</p>
+            <div class="flex gap-4 mt-4 md:mt-0">
+                <a href="#" class="text-gray-500 hover:text-brand-red transition-colors"><i data-lucide="github"
+                        class="w-5 h-5"></i></a>
+                <a href="#" class="text-gray-500 hover:text-brand-red transition-colors"><i data-lucide="twitter"
+                        class="w-5 h-5"></i></a>
+            </div>
         </div>
     </footer>
 
-    <!-- Notification Toast -->
-    <div id="toast"
-        class="fixed bottom-10 right-10 bg-gradient-to-r from-zinc-100 to-white text-black px-6 py-4 rounded-xl font-bold translate-y-20 opacity-0 transition-all duration-300 pointer-events-none z-[100] shadow-2xl border-2 border-zinc-300 flex items-center gap-3">
-        <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
-        <span>Action successful.</span>
-    </div>
-
-    <!-- Auth Dialog -->
-    <div id="auth-dialog" class="auth-dialog">
-        <div class="auth-content">
-            <div class="flex justify-between items-center mb-6">
-                <h2 id="auth-title" class="text-2xl font-bold gradient-text">Sign In</h2>
-                <button onclick="closeAuthDialog()" class="text-zinc-500 hover:text-white transition">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-
-            <form id="auth-form" class="space-y-4">
-                <div>
-                    <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">Username</label>
-                    <input type="text" id="auth-username" required
-                        class="w-full mt-2 bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500 transition"
-                        placeholder="Choose a username">
-                </div>
-                <div id="email-field">
-                    <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">Email</label>
-                    <input type="email" id="auth-email" required
-                        class="w-full mt-2 bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500 transition"
-                        placeholder="your@email.com">
-                </div>
-                <div>
-                    <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">Password</label>
-                    <input type="password" id="auth-password" required
-                        class="w-full mt-2 bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500 transition"
-                        placeholder="••••••••">
-                </div>
-                <div id="confirm-password-field" class="hidden">
-                    <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">Confirm Password</label>
-                    <input type="password" id="auth-confirm-password"
-                        class="w-full mt-2 bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500 transition"
-                        placeholder="••••••••">
-                </div>
-
-                <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closeAuthDialog()"
-                        class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white py-3 rounded-lg font-bold transition">
-                        Cancel
-                    </button>
-                    <button type="submit" id="auth-submit-btn"
-                        class="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-3 rounded-lg font-bold transition">
-                        Sign In
-                    </button>
-                </div>
-
-                <div class="text-center text-sm text-zinc-500">
-                    <span id="auth-switch-text">Don't have an account?</span>
-                    <button type="button" id="auth-switch-btn" onclick="switchAuthMode()"
-                        class="text-red-500 hover:text-red-400 font-bold ml-1">Sign Up</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Change Password Dialog -->
-    <div id="change-password-dialog" class="auth-dialog">
-        <div class="auth-content">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold gradient-text">Change Password</h2>
-                <button onclick="closeChangePasswordDialog()" class="text-zinc-500 hover:text-white transition">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-
-            <form id="change-password-form" class="space-y-4">
-                <div>
-                    <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">Current Password</label>
-                    <input type="password" id="current-password" required
-                        class="w-full mt-2 bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500 transition"
-                        placeholder="••••••••">
-                </div>
-                <div>
-                    <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">New Password</label>
-                    <input type="password" id="new-password" required
-                        class="w-full mt-2 bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500 transition"
-                        placeholder="••••••••">
-                </div>
-                <div>
-                    <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">Confirm New Password</label>
-                    <input type="password" id="confirm-new-password" required
-                        class="w-full mt-2 bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500 transition"
-                        placeholder="••••••••">
-                </div>
-
-                <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closeChangePasswordDialog()"
-                        class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white py-3 rounded-lg font-bold transition">
-                        Cancel
-                    </button>
-                    <button type="submit"
-                        class="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-3 rounded-lg font-bold transition">
-                        Change Password
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Publish Dialog -->
-    <div id="publish-dialog" class="publish-dialog">
-        <div class="publish-content">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold gradient-text">Publish Your Game</h2>
-                <button onclick="closePublishDialog()" class="text-zinc-500 hover:text-white transition">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-
-            <form id="publish-form" class="space-y-6">
-                <!-- Game Name -->
-                <div>
-                    <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">Game Name</label>
-                    <input type="text" id="publish-name" required
-                        class="w-full mt-2 bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500 transition"
-                        placeholder="Enter your game name">
-                </div>
-
-                <!-- Description -->
-                <div>
-                    <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">Description</label>
-                    <textarea id="publish-description" required rows="4"
-                        class="w-full mt-2 bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500 transition resize-none"
-                        placeholder="Describe your game..."></textarea>
-                </div>
-
-                <!-- Thumbnails -->
-                <div>
-                    <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">Screenshots (Max 5)</label>
-                    <div class="mt-2">
-                        <input type="file" id="thumbnail-input" accept="image/*" multiple class="hidden"
-                            onchange="handleThumbnails(this)">
-                        <div class="grid grid-cols-5 gap-2">
-                            <div class="thumbnail-preview" onclick="document.getElementById('thumbnail-input').click()">
-                                <i data-lucide="plus" class="w-6 h-6 text-zinc-600"></i>
-                            </div>
-                            <div id="thumbnail-previews"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tags -->
-                <div>
-                    <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">Tags</label>
-                    <input type="text" id="publish-tags"
-                        class="w-full mt-2 bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500 transition"
-                        placeholder="action, adventure, puzzle (comma separated)">
-                </div>
-
-                <!-- Age Rating -->
-                <div>
-                    <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">Age Rating</label>
-                    <select id="publish-age-rating"
-                        class="w-full mt-2 bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500 transition">
-                        <option value="E">Everyone (E)</option>
-                        <option value="E10">Everyone 10+ (E10+)</option>
-                        <option value="T">Teen (T)</option>
-                        <option value="M">Mature 17+ (M)</option>
-                        <option value="AO">Adults Only 18+ (AO)</option>
-                    </select>
-                </div>
-
-                <!-- Game Type -->
-                <div>
-                    <label class="text-sm font-bold text-zinc-400 uppercase tracking-wider">Game Type</label>
-                    <select id="publish-game-type"
-                        class="w-full mt-2 bg-black border border-zinc-700 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500 transition">
-                        <option value="3d">3D Game</option>
-                        <option value="2d">2D Game</option>
-                        <option value="puzzle">Puzzle</option>
-                        <option value="action">Action</option>
-                        <option value="adventure">Adventure</option>
-                        <option value="simulation">Simulation</option>
-                    </select>
-                </div>
-
-                <!-- Actions -->
-                <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="closePublishDialog()"
-                        class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white py-3 rounded-lg font-bold transition">
-                        Cancel
-                    </button>
-                    <button type="submit"
-                        class="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white py-3 rounded-lg font-bold transition flex items-center justify-center gap-2">
-                        <i data-lucide="rocket" class="w-5 h-5"></i> Publish Game
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <script>
-        // --- Account System ---
-        let currentUser = null;
-        let authMode = 'login'; // 'login' or 'signup'
-        let hasVisitedBefore = false;
-
-        // Initialize account system
-        function initAccountSystem() {
-            // Check if user has visited before
-            hasVisitedBefore = localStorage.getItem('epsilon_has_visited') === 'true';
-
-            const savedUser = localStorage.getItem('epsilon_current_user');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                updateUserUI();
-            } else if (!hasVisitedBefore) {
-                // First time visitor - force signup
-                setTimeout(() => {
-                    openAuthDialog('signup');
-                    localStorage.setItem('epsilon_has_visited', 'true');
-                }, 1000);
-            }
-        }
-
-        // Auth Dialog Functions
-        function openAuthDialog(mode = 'login') {
-            authMode = mode;
-            const dialog = document.getElementById('auth-dialog');
-            const title = document.getElementById('auth-title');
-            const submitBtn = document.getElementById('auth-submit-btn');
-            const emailField = document.getElementById('email-field');
-            const confirmField = document.getElementById('confirm-password-field');
-            const switchText = document.getElementById('auth-switch-text');
-            const switchBtn = document.getElementById('auth-switch-btn');
-
-            if (mode === 'signup') {
-                title.textContent = 'Create Account';
-                submitBtn.textContent = 'Sign Up';
-                emailField.classList.remove('hidden');
-                confirmField.classList.remove('hidden');
-                switchText.textContent = 'Already have an account?';
-                switchBtn.textContent = 'Sign In';
-            } else {
-                title.textContent = 'Sign In';
-                submitBtn.textContent = 'Sign In';
-                emailField.classList.add('hidden');
-                confirmField.classList.add('hidden');
-                switchText.textContent = "Don't have an account?";
-                switchBtn.textContent = 'Sign Up';
-            }
-
-            dialog.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeAuthDialog() {
-            // Don't allow closing if first time visitor
-            if (!hasVisitedBefore && !currentUser) {
-                notify("Please create an account to continue");
-                return;
-            }
-
-            document.getElementById('auth-dialog').classList.remove('active');
-            document.body.style.overflow = '';
-            document.getElementById('auth-form').reset();
-        }
-
-        function switchAuthMode() {
-            openAuthDialog(authMode === 'login' ? 'signup' : 'login');
-        }
-
-        // Handle auth form submission
-        document.getElementById('auth-form').addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const username = document.getElementById('auth-username').value;
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-password').value;
-            const confirmPassword = document.getElementById('auth-confirm-password').value;
-
-            if (authMode === 'signup') {
-                if (password !== confirmPassword) {
-                    notify("Passwords don't match!");
-                    return;
-                }
-
-                // Check if username already exists
-                const users = JSON.parse(localStorage.getItem('epsilon_users') || '[]');
-                if (users.find(u => u.username === username)) {
-                    notify("Username already exists!");
-                    return;
-                }
-
-                // Create new user
-                const newUser = {
-                    id: Date.now(),
-                    username,
-                    email,
-                    password: btoa(password), // Simple encoding (not secure for production)
-                    displayName: username,
-                    bio: '',
-                    profileImage: null,
-                    joinedDate: new Date().toLocaleDateString(),
-                    settings: {
-                        publicProfile: true,
-                        showEmail: false,
-                        allowMessages: true
-                    }
-                };
-
-                users.push(newUser);
-                localStorage.setItem('epsilon_users', JSON.stringify(users));
-
-                // Auto login
-                currentUser = newUser;
-                localStorage.setItem('epsilon_current_user', JSON.stringify(currentUser));
-
-                notify("Account created successfully!");
-                closeAuthDialog();
-                updateUserUI();
-            } else {
-                // Login
-                const users = JSON.parse(localStorage.getItem('epsilon_users') || '[]');
-                const user = users.find(u => u.username === username);
-
-                if (!user || atob(user.password) !== password) {
-                    notify("Invalid username or password!");
-                    return;
-                }
-
-                currentUser = user;
-                localStorage.setItem('epsilon_current_user', JSON.stringify(currentUser));
-
-                notify("Welcome back, " + user.username + "!");
-                closeAuthDialog();
-                updateUserUI();
-            }
-        });
-
-        // Update UI based on login state
-        function updateUserUI() {
-            const loginBtn = document.getElementById('login-btn');
-            const signupBtn = document.getElementById('signup-btn');
-            const logoutBtn = document.getElementById('logout-btn');
-            const dropdownUsername = document.getElementById('dropdown-username');
-            const dropdownEmail = document.getElementById('dropdown-email');
-            const mobileUsername = document.getElementById('mobile-username');
-            const userAvatar = document.getElementById('user-avatar');
-
-            if (currentUser) {
-                // Logged in
-                loginBtn.classList.add('hidden');
-                signupBtn.classList.add('hidden');
-                logoutBtn.classList.remove('hidden');
-                dropdownUsername.textContent = currentUser.displayName || currentUser.username;
-                dropdownEmail.textContent = currentUser.email || 'No email';
-                mobileUsername.textContent = currentUser.displayName || currentUser.username;
-
-                if (currentUser.profileImage) {
-                    userAvatar.src = currentUser.profileImage;
-                    userAvatar.classList.remove('hidden');
-                    document.querySelector('#user-profile-btn i').classList.add('hidden');
-                }
-
-                // Update settings page if visible
-                updateSettingsPage();
-            } else {
-                // Logged out
-                loginBtn.classList.remove('hidden');
-                signupBtn.classList.remove('hidden');
-                logoutBtn.classList.add('hidden');
-                dropdownUsername.textContent = 'Guest';
-                dropdownEmail.textContent = 'Not logged in';
-                mobileUsername.textContent = 'Guest';
-                userAvatar.classList.add('hidden');
-                document.querySelector('#user-profile-btn i').classList.remove('hidden');
-            }
-        }
-
-        // Logout
-        function logout() {
-            if (confirm("Are you sure you want to sign out?")) {
-                currentUser = null;
-                localStorage.removeItem('epsilon_current_user');
-                notify("Logged out successfully");
-                updateUserUI();
-                closeUserMenu();
-
-                // If it was their first visit, show signup again
-                if (!hasVisitedBefore) {
-                    setTimeout(() => openAuthDialog('signup'), 500);
-                }
-            }
-        }
-
-        // User dropdown menu
-        function openUserMenu() {
-            const dropdown = document.getElementById('user-dropdown');
-            dropdown.classList.toggle('hidden');
-
-            // Close when clicking outside
-            setTimeout(() => {
-                document.addEventListener('click', closeUserMenu);
-            }, 100);
-        }
-
-        function closeUserMenu(e) {
-            const dropdown = document.getElementById('user-dropdown');
-            const profileBtn = document.getElementById('user-profile-btn');
-
-            if (!dropdown.contains(e?.target) && !profileBtn.contains(e?.target)) {
-                dropdown.classList.add('hidden');
-                document.removeEventListener('click', closeUserMenu);
-            }
-        }
-
-        // Profile image handling
-        function handleProfileImage(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const imageUrl = e.target.result;
-
-                    // Update current user
-                    if (currentUser) {
-                        currentUser.profileImage = imageUrl;
-                        localStorage.setItem('epsilon_current_user', JSON.stringify(currentUser));
-
-                        // Update users list
-                        const users = JSON.parse(localStorage.getItem('epsilon_users') || '[]');
-                        const userIndex = users.findIndex(u => u.id === currentUser.id);
-                        if (userIndex !== -1) {
-                            users[userIndex].profileImage = imageUrl;
-                            localStorage.setItem('epsilon_users', JSON.stringify(users));
-                        }
-
-                        // Update all profile image elements
-                        updateUserUI();
-                        updateSettingsPage();
-
-                        // Update profile image in settings page
-                        const settingsProfileImage = document.getElementById('settings-profile-image');
-                        if (settingsProfileImage) {
-                            settingsProfileImage.src = imageUrl;
-                        }
-
-                        notify("Profile image updated!");
-                    }
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // Update settings page
-        function updateSettingsPage() {
-            if (!currentUser) return;
-
-            document.getElementById('settings-username').textContent = currentUser.displayName || currentUser.username;
-            document.getElementById('settings-email').textContent = currentUser.email || 'No email';
-            document.getElementById('settings-joined').textContent = currentUser.joinedDate || new Date().toLocaleDateString();
-            document.getElementById('settings-display-name').value = currentUser.displayName || '';
-            document.getElementById('settings-bio').value = currentUser.bio || '';
-            document.getElementById('settings-public-profile').checked = currentUser.settings?.publicProfile ?? true;
-            document.getElementById('settings-show-email').checked = currentUser.settings?.showEmail ?? false;
-            document.getElementById('settings-allow-messages').checked = currentUser.settings?.allowMessages ?? true;
-
-            const profileImage = document.getElementById('settings-profile-image');
-            if (currentUser.profileImage) {
-                profileImage.src = currentUser.profileImage;
-            } else {
-                profileImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzk5OSIgZm9udC1zaXplPSI0OCIgZm9udC1mYW1pbHk9IkFyaWFsIj4ke2N1cnJlbnRVc2VyPy5jaGFyQXQoMCkudG9VcHBlckNhc2UoKX08L3RleHQ+PC9zdmc+';
-            }
-
-            // Count user's games
-            const projects = JSON.parse(localStorage.getItem('epsilon_projects') || '[]');
-            const userProjects = projects.filter(p => p.author === currentUser.username);
-            document.getElementById('settings-games').textContent = userProjects.length;
-        }
-
-        // Update account settings
-        function updateAccountSettings() {
-            if (!currentUser) return;
-
-            currentUser.displayName = document.getElementById('settings-display-name').value;
-            currentUser.bio = document.getElementById('settings-bio').value;
-            currentUser.settings = {
-                publicProfile: document.getElementById('settings-public-profile').checked,
-                showEmail: document.getElementById('settings-show-email').checked,
-                allowMessages: document.getElementById('settings-allow-messages').checked
-            };
-
-            // Update in users list
-            const users = JSON.parse(localStorage.getItem('epsilon_users') || '[]');
-            const userIndex = users.findIndex(u => u.id === currentUser.id);
-            if (userIndex !== -1) {
-                users[userIndex] = currentUser;
-                localStorage.setItem('epsilon_users', JSON.stringify(users));
-            }
-
-            localStorage.setItem('epsilon_current_user', JSON.stringify(currentUser));
-            updateUserUI();
-            notify("Settings updated successfully!");
-        }
-
-        // Change password dialog
-        function openChangePasswordDialog() {
-            if (!currentUser) {
-                notify("Please log in first");
-                return;
-            }
-            document.getElementById('change-password-dialog').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeChangePasswordDialog() {
-            document.getElementById('change-password-dialog').classList.remove('active');
-            document.body.style.overflow = '';
-            document.getElementById('change-password-form').reset();
-        }
-
-        // Handle change password
-        document.getElementById('change-password-form').addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const currentPassword = document.getElementById('current-password').value;
-            const newPassword = document.getElementById('new-password').value;
-            const confirmNewPassword = document.getElementById('confirm-new-password').value;
-
-            if (atob(currentUser.password) !== currentPassword) {
-                notify("Current password is incorrect!");
-                return;
-            }
-
-            if (newPassword !== confirmNewPassword) {
-                notify("New passwords don't match!");
-                return;
-            }
-
-            // Update password
-            currentUser.password = btoa(newPassword);
-
-            // Update in users list
-            const users = JSON.parse(localStorage.getItem('epsilon_users') || '[]');
-            const userIndex = users.findIndex(u => u.id === currentUser.id);
-            if (userIndex !== -1) {
-                users[userIndex].password = currentUser.password;
-                localStorage.setItem('epsilon_users', JSON.stringify(users));
-            }
-
-            localStorage.setItem('epsilon_current_user', JSON.stringify(currentUser));
-            closeChangePasswordDialog();
-            notify("Password changed successfully!");
-        });
-
-        // Delete account
-        function deleteAccount() {
-            if (!currentUser) return;
-
-            if (confirm("Are you sure you want to delete your account? This action cannot be undone!")) {
-                // Remove from users list
-                let users = JSON.parse(localStorage.getItem('epsilon_users') || '[]');
-                users = users.filter(u => u.id !== currentUser.id);
-                localStorage.setItem('epsilon_users', JSON.stringify(users));
-
-                // Remove user's projects
-                let projects = JSON.parse(localStorage.getItem('epsilon_projects') || '[]');
-                projects = projects.filter(p => p.author !== currentUser.username);
-                localStorage.setItem('epsilon_projects', JSON.stringify(projects));
-
-                // Remove published games
-                let publishedGames = JSON.parse(localStorage.getItem('published_games') || '[]');
-                publishedGames = publishedGames.filter(g => g.author !== currentUser.username);
-                localStorage.setItem('published_games', JSON.stringify(publishedGames));
-
-                // Logout
-                logout();
-                notify("Account deleted successfully");
-            }
-        }
-
-        // --- Mobile Menu ---
-        document.getElementById('mobile-menu-btn').addEventListener('click', function () {
-            document.getElementById('mobile-menu').classList.add('active');
-            document.getElementById('mobile-menu-overlay').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        });
-
-        document.getElementById('mobile-menu-overlay').addEventListener('click', closeMobileMenu);
-
-        function closeMobileMenu() {
-            document.getElementById('mobile-menu').classList.remove('active');
-            document.getElementById('mobile-menu-overlay').classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        // --- Navigation ---
-        function showPage(pageId) {
-            // Check if user is logged in (except for discover page)
-            if (!currentUser && pageId !== 'discover') {
-                notify("Please sign in to access this page");
-                openAuthDialog('login');
-                return;
-            }
-
-            document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
-            document.getElementById('page-' + pageId).classList.remove('hidden');
-
-            // Update active state in nav (Desktop only)
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('text-red-500');
-            });
-            window.scrollTo(0, 0);
-
-            // Close mobile menu when navigating
-            closeMobileMenu();
-
-            if (pageId === 'library') loadLibrary();
-            if (pageId === 'engine') setTimeout(init3DStudio, 100);
-            if (pageId === 'discover') loadDiscoverGames();
-            if (pageId === 'settings') updateSettingsPage();
-        }
-
-        function notify(msg) {
-            const toast = document.getElementById('toast');
-            toast.querySelector('span').innerText = msg;
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
-        }
-
-        // --- Publish Dialog ---
-        let thumbnailData = [];
-
-        function openPublishDialog() {
-            if (!currentUser) {
-                notify("Please sign in to publish games!");
-                openAuthDialog('login');
-                return;
-            }
-
-            if (engineObjects.length === 0) {
-                notify("Add some objects to your game before publishing!");
-                return;
-            }
-            document.getElementById('publish-dialog').classList.add('active');
-            document.body.style.overflow = 'hidden';
-
-            // Pre-fill with project name
-            const projectName = document.getElementById('game-title').value || "Untitled Game";
-            document.getElementById('publish-name').value = projectName;
-        }
-
-        function closePublishDialog() {
-            document.getElementById('publish-dialog').classList.remove('active');
-            document.body.style.overflow = '';
-            // Reset form
-            document.getElementById('publish-form').reset();
-            thumbnailData = [];
-            document.getElementById('thumbnail-previews').innerHTML = '';
-        }
-
-        function handleThumbnails(input) {
-            const files = Array.from(input.files);
-            const maxThumbnails = 5;
-
-            if (thumbnailData.length + files.length > maxThumbnails) {
-                notify(`Maximum ${maxThumbnails} screenshots allowed`);
-                return;
-            }
-
-            files.forEach(file => {
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        thumbnailData.push(e.target.result);
-                        updateThumbnailPreviews();
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
-
-        function updateThumbnailPreviews() {
-            const container = document.getElementById('thumbnail-previews');
-            container.innerHTML = thumbnailData.map((src, index) => `
-                <div class="thumbnail-preview">
-                    <img src="${src}" alt="Thumbnail ${index + 1}">
-                    <button type="button" onclick="removeThumbnail(${index})" class="remove-btn">
-                        <i data-lucide="x" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            `).join('');
-            lucide.createIcons();
-        }
-
-        function removeThumbnail(index) {
-            thumbnailData.splice(index, 1);
-            updateThumbnailPreviews();
-        }
-
-        // Handle publish form submission
-        document.getElementById('publish-form').addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const gameData = {
-                id: Date.now(),
-                name: document.getElementById('publish-name').value,
-                description: document.getElementById('publish-description').value,
-                thumbnails: thumbnailData.length > 0 ? thumbnailData : ['data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iIzExMSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzMzMyIgZm9udC1zaXplPSIyNCIgZm9udC1mYW1pbHk9IkFyaWFsIj5ObyBTY3JlZW5zaG90PC90ZXh0Pjwvc3ZnPg=='],
-                tags: document.getElementById('publish-tags').value.split(',').map(t => t.trim()).filter(t => t),
-                ageRating: document.getElementById('publish-age-rating').value,
-                gameType: document.getElementById('publish-game-type').value,
-                likes: Math.floor(Math.random() * 1000),
-                dislikes: Math.floor(Math.random() * 100),
-                players: Math.floor(Math.random() * 5000),
-                author: currentUser.username,
-                authorAvatar: currentUser.profileImage,
-                date: new Date().toLocaleDateString(),
-                engineData: engineObjects.map(o => ({
-                    type: o.type,
-                    name: o.name,
-                    pos: o.pos,
-                    rot: o.rot,
-                    scale: o.scale,
-                    color: o.color,
-                    speed: o.speed,
-                    jumpStrength: o.jumpStrength,
-                    viewMode: o.viewMode,
-                    customData: o.customData
-                }))
-            };
-
-            // Save to published games
-            let publishedGames = JSON.parse(localStorage.getItem('published_games') || '[]');
-            publishedGames.unshift(gameData);
-            localStorage.setItem('published_games', JSON.stringify(publishedGames));
-
-            // Also save to user's projects
-            const projects = JSON.parse(localStorage.getItem('epsilon_projects') || '[]');
-            projects.push({
-                id: gameData.id,
-                title: gameData.name,
-                type: '3d',
-                data: gameData.engineData,
-                date: gameData.date,
-                author: currentUser.username
-            });
-            localStorage.setItem('epsilon_projects', JSON.stringify(projects));
-
-            closePublishDialog();
-            notify(`"${gameData.name}" published successfully!`);
-
-            // Go to discover page to see the published game
-            setTimeout(() => showPage('discover'), 1000);
-        });
-
-        // --- Load Published Games in Discover ---
-        function loadDiscoverGames() {
-            const container = document.getElementById('discover-games');
-            const publishedGames = JSON.parse(localStorage.getItem('published_games') || '[]');
-
-            // Clear container first to prevent duplication
-            container.innerHTML = '';
-
-            // Add built-in games
-            const builtInGames = [
-                {
-                    id: 'snake',
-                    name: 'Neon Serpent',
-                    description: 'Retro snake but with more red.',
-                    likes: 89,
-                    dislikes: 11,
-                    players: '2.4k',
-                    thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iIzAwMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iI2ZmMDAwMCIgZm9udC1zaXplPSI2MCIgZm9udC1mYW1pbHk9IkFyaWFsIj7wn5iUPC90ZXh0Pjwvc3ZnPg==',
-                    author: 'Epsilon Team',
-                    gameType: '2d'
-                },
-                {
-                    id: 'clicker',
-                    name: 'Epsilon Clicker',
-                    description: 'Destroy your mouse for points.',
-                    likes: 95,
-                    dislikes: 5,
-                    players: '5.1k',
-                    thumbnail: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iIzAwMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iI2ZmMDAwMCIgZm9udC1zaXplPSI2MCIgZm9udC1mYW1pbHk9IkFyaWFsIj7wn5iNPC90ZXh0Pjwvc3ZnPg==',
-                    author: 'Epsilon Team',
-                    gameType: '2d'
-                }
-            ];
-
-            // Add built-in games to container
-            builtInGames.forEach(game => {
-                const rating = game.likes > 0 ? Math.round((game.likes / (game.likes + game.dislikes)) * 100) : 0;
-
-                container.innerHTML += `
-                    <div onclick="playInternal('${game.id}')" class="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800 rounded-xl overflow-hidden cursor-pointer red-glow transition duration-300 group hover:scale-105">
-                        <div class="h-32 md:h-40 bg-gradient-to-br from-red-900 to-black flex items-center justify-center relative overflow-hidden">
-                            <img src="${game.thumbnail}" alt="${game.name}" class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition"></div>
-                            <span class="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded font-bold uppercase tracking-wider">${game.gameType}</span>
-                        </div>
-                        <div class="p-4 md:p-5">
-                            <div class="flex items-center justify-between mb-2">
-                                <h3 class="font-bold text-base md:text-lg truncate">${game.name}</h3>
-                                <i data-lucide="play-circle" class="w-4 h-4 md:w-5 md:h-5 text-red-500 opacity-0 group-hover:opacity-100 transition flex-shrink-0"></i>
-                            </div>
-                            <p class="text-xs text-zinc-500 mt-1 mb-4 line-clamp-2">${game.description}</p>
-                            <div class="flex justify-between items-center text-[10px] md:text-[11px] text-zinc-400">
-                                <span class="flex items-center gap-1"><i data-lucide="thumbs-up" class="w-3 h-3"></i> ${rating}%</span>
-                                <span class="flex items-center gap-1"><i data-lucide="users" class="w-3 h-3"></i> ${game.players}</span>
-                            </div>
-                            <div class="mt-2 flex items-center gap-2">
-                                <div class="w-5 h-5 rounded-full bg-zinc-700"></div>
-                                <span class="text-[9px] text-zinc-500">by ${game.author}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            // Add published games
-            publishedGames.forEach(game => {
-                const thumbnail = game.thumbnails[0];
-                const rating = game.likes > 0 ? Math.round((game.likes / (game.likes + game.dislikes)) * 100) : 0;
-
-                container.innerHTML += `
-                    <div onclick="playPublishedGame(${game.id})" class="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800 rounded-xl overflow-hidden cursor-pointer red-glow transition duration-300 group hover:scale-105">
-                        <div class="h-32 md:h-40 bg-gradient-to-br from-purple-900 to-black flex items-center justify-center relative overflow-hidden">
-                            <img src="${thumbnail}" alt="${game.name}" class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition"></div>
-                            <span class="absolute top-2 right-2 bg-purple-600 text-white text-xs px-2 py-1 rounded font-bold uppercase tracking-wider">${game.gameType}</span>
-                        </div>
-                        <div class="p-4 md:p-5">
-                            <div class="flex items-center justify-between mb-2">
-                                <h3 class="font-bold text-base md:text-lg truncate">${game.name}</h3>
-                                <i data-lucide="play-circle" class="w-4 h-4 md:w-5 md:h-5 text-red-500 opacity-0 group-hover:opacity-100 transition flex-shrink-0"></i>
-                            </div>
-                            <p class="text-xs text-zinc-500 mt-1 mb-4 line-clamp-2">${game.description}</p>
-                            <div class="flex justify-between items-center text-[10px] md:text-[11px] text-zinc-400">
-                                <span class="flex items-center gap-1"><i data-lucide="thumbs-up" class="w-3 h-3"></i> ${rating}%</span>
-                                <span class="flex items-center gap-1"><i data-lucide="users" class="w-3 h-3"></i> ${game.players}</span>
-                                <span class="bg-purple-600/20 text-purple-400 px-2 py-0.5 rounded">${game.ageRating}</span>
-                            </div>
-                            <div class="mt-2 flex items-center gap-2">
-                                ${game.authorAvatar ? `<img src="${game.authorAvatar}" class="w-5 h-5 rounded-full">` : '<div class="w-5 h-5 rounded-full bg-zinc-700"></div>'}
-                                <span class="text-[9px] text-zinc-500">by ${game.author}</span>
-                            </div>
-                            <div class="mt-2 flex flex-wrap gap-1">
-                                ${game.tags.slice(0, 3).map(tag => `<span class="text-[9px] bg-zinc-800 px-2 py-0.5 rounded text-zinc-500">${tag}</span>`).join('')}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            // Add "Create Something" card
-            container.innerHTML += `
-                <div onclick="showPage('engine')" class="bg-zinc-900/50 border-2 border-dashed border-zinc-700 rounded-xl overflow-hidden cursor-pointer hover:border-red-600 hover:bg-zinc-900 transition-all duration-300 flex flex-col items-center justify-center p-6 md:p-8 text-center group">
-                    <div class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-zinc-800 flex items-center justify-center mb-4 group-hover:bg-red-600 transition">
-                        <i data-lucide="plus" class="w-6 h-6 md:w-8 md:h-8 text-zinc-600 group-hover:text-white transition"></i>
-                    </div>
-                    <h3 class="font-bold text-sm md:text-base text-zinc-400 group-hover:text-white transition">Create Something</h3>
-                    <p class="text-xs text-zinc-600 mt-2 group-hover:text-zinc-400 transition">Launch the Epsilon Engine to build your own HTML game.</p>
-                </div>
-            `;
-
-            // Re-initialize Lucide icons
-            lucide.createIcons();
-        }
-
-        function playPublishedGame(gameId) {
-            const publishedGames = JSON.parse(localStorage.getItem('published_games') || '[]');
-            const game = publishedGames.find(g => g.id === gameId);
-
-            if (game) {
-                // Load game data into engine
-                if (!is3DInitialized) init3DStudio();
-                clearPreview();
-
-                game.engineData.forEach(d => {
-                    add3DObject(d.type, d.customData);
-                    const obj = engineObjects[engineObjects.length - 1];
-                    obj.name = d.name;
-                    update3DProp('pos.x', d.pos.x);
-                    update3DProp('pos.y', d.pos.y);
-                    update3DProp('pos.z', d.pos.z);
-                    update3DProp('rot.x', d.rot.x);
-                    update3DProp('rot.y', d.rot.y);
-                    update3DProp('rot.z', d.rot.z);
-                    update3DProp('scale.x', d.scale.x);
-                    update3DProp('scale.y', d.scale.y);
-                    update3DProp('scale.z', d.scale.z);
-                    update3DProp('color', d.color);
-                });
-
-                runVisualGame();
-                document.getElementById('current-playing-title').innerHTML = `<span>${game.name}</span>`;
-            }
-        }
-
-        // --- Epsilon 3D Studio Logic ---
-        let scene, camera, renderer;
-        let engineObjects = [];
-        let selectedId = null;
-        let is3DInitialized = false;
-        let gridHelper;
-        let ambientLight;
-        let pointLight;
-        let backgroundMusicURL = null;
-        let transformMode = 'move'; // 'move', 'rotate', 'scale'
-        let cameraView = 'perspective'; // 'perspective', 'top', 'front', 'right'
-        let cameraPositions = {
-            perspective: { x: 5, y: 5, z: 5 },
-            top: { x: 0, y: 10, z: 0 },
-            front: { x: 0, y: 0, z: 10 },
-            right: { x: 10, y: 0, z: 0 }
-        };
-
-        function init3DStudio() {
-            const container = document.getElementById('editor-viewport');
-            if (!container || is3DInitialized) return;
-
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x050505);
-
-            camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.set(5, 5, 5);
-            camera.lookAt(0, 0, 0);
-
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            container.appendChild(renderer.domElement);
-
-            gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
-            scene.add(gridHelper);
-
-            ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-            scene.add(ambientLight);
-
-            pointLight = new THREE.PointLight(0xffffff, 1);
-            pointLight.position.set(5, 5, 5);
-            scene.add(pointLight);
-
-            // Add mouse/touch controls for camera
-            let isMouseDown = false;
-            let mouseX = 0;
-            let mouseY = 0;
-            let touchStartX = 0;
-            let touchStartY = 0;
-
-            // Mouse events
-            renderer.domElement.addEventListener('mousedown', (e) => {
-                if (e.shiftKey) {
-                    isMouseDown = true;
-                    mouseX = e.clientX;
-                    mouseY = e.clientY;
-                }
-            });
-
-            renderer.domElement.addEventListener('mousemove', (e) => {
-                if (!isMouseDown) return;
-
-                const deltaX = e.clientX - mouseX;
-                const deltaY = e.clientY - mouseY;
-
-                // Rotate camera around origin
-                const spherical = new THREE.Spherical();
-                spherical.setFromVector3(camera.position);
-                spherical.theta -= deltaX * 0.01;
-                spherical.phi += deltaY * 0.01;
-                spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi));
-
-                camera.position.setFromSpherical(spherical);
-                camera.lookAt(0, 0, 0);
-
-                mouseX = e.clientX;
-                mouseY = e.clientY;
-            });
-
-            renderer.domElement.addEventListener('mouseup', () => {
-                isMouseDown = false;
-            });
-
-            renderer.domElement.addEventListener('wheel', (e) => {
-                const scale = e.deltaY > 0 ? 1.1 : 0.9;
-                camera.position.multiplyScalar(scale);
-            });
-
-            // Touch events for mobile
-            renderer.domElement.addEventListener('touchstart', (e) => {
-                if (e.touches.length === 1) {
-                    touchStartX = e.touches[0].clientX;
-                    touchStartY = e.touches[0].clientY;
-                }
-            });
-
-            renderer.domElement.addEventListener('touchmove', (e) => {
-                if (e.touches.length === 1) {
-                    e.preventDefault();
-                    const deltaX = e.touches[0].clientX - touchStartX;
-                    const deltaY = e.touches[0].clientY - touchStartY;
-
-                    // Rotate camera around origin
-                    const spherical = new THREE.Spherical();
-                    spherical.setFromVector3(camera.position);
-                    spherical.theta -= deltaX * 0.01;
-                    spherical.phi += deltaY * 0.01;
-                    spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi));
-
-                    camera.position.setFromSpherical(spherical);
-                    camera.lookAt(0, 0, 0);
-
-                    touchStartX = e.touches[0].clientX;
-                    touchStartY = e.touches[0].clientY;
-                }
-            });
-
-            // Pinch to zoom
-            let initialDistance = 0;
-            renderer.domElement.addEventListener('touchstart', (e) => {
-                if (e.touches.length === 2) {
-                    initialDistance = Math.hypot(
-                        e.touches[0].clientX - e.touches[1].clientX,
-                        e.touches[0].clientY - e.touches[1].clientY
-                    );
-                }
-            });
-
-            renderer.domElement.addEventListener('touchmove', (e) => {
-                if (e.touches.length === 2) {
-                    e.preventDefault();
-                    const currentDistance = Math.hypot(
-                        e.touches[0].clientX - e.touches[1].clientX,
-                        e.touches[0].clientY - e.touches[1].clientY
-                    );
-
-                    const scale = currentDistance / initialDistance;
-                    camera.position.multiplyScalar(scale);
-
-                    initialDistance = currentDistance;
-                }
-            });
-
-            // Keyboard shortcuts
-            document.addEventListener('keydown', (e) => {
-                if (document.getElementById('page-engine').classList.contains('hidden')) return;
-
-                switch (e.key) {
-                    case 'g': case 'G':
-                        setTransformMode('move');
-                        break;
-                    case 'r': case 'R':
-                        setTransformMode('rotate');
-                        break;
-                    case 's': case 'S':
-                        setTransformMode('scale');
-                        break;
-                    case '1':
-                        setCameraView('front');
-                        break;
-                    case '3':
-                        setCameraView('right');
-                        break;
-                    case '5':
-                        setCameraView('perspective');
-                        break;
-                    case '7':
-                        setCameraView('top');
-                        break;
-                }
-            });
-
-            window.addEventListener('resize', () => {
-                if (!is3DInitialized) return;
-                camera.aspect = container.clientWidth / container.clientHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(container.clientWidth, container.clientHeight);
-            });
-
-            animate();
-            is3DInitialized = true;
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
-        }
-
-        function setTransformMode(mode) {
-            transformMode = mode;
-            document.querySelectorAll('.transform-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(mode + '-tool').classList.add('active');
-        }
-
-        function setCameraView(view) {
-            cameraView = view;
-            const pos = cameraPositions[view];
-
-            // Animate camera transition
-            const startPos = camera.position.clone();
-            const endPos = new THREE.Vector3(pos.x, pos.y, pos.z);
-            let progress = 0;
-
-            function animateCamera() {
-                progress += 0.1;
-                if (progress >= 1) {
-                    camera.position.copy(endPos);
-                    camera.lookAt(0, 0, 0);
-                    return;
-                }
-
-                camera.position.lerpVectors(startPos, endPos, progress);
-                camera.lookAt(0, 0, 0);
-                requestAnimationFrame(animateCamera);
-            }
-
-            animateCamera();
-
-            // Update gizmo buttons
-            document.querySelectorAll('.gizmo-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector('.gizmo-' + view).classList.add('active');
-        }
-
-        function updateSceneBackground(color) {
-            if (!scene) return;
-            scene.background = new THREE.Color(color);
-            document.getElementById('bg-color').value = color;
-            document.getElementById('bg-color-text').value = color;
-        }
-
-        function updateAmbientLight(value) {
-            if (!ambientLight) return;
-            ambientLight.intensity = value / 100;
-        }
-
-        function updateGridSize(value) {
-            if (!gridHelper) return;
-            scene.remove(gridHelper);
-            gridHelper = new THREE.GridHelper(20, value, 0x444444, 0x222222);
-            scene.add(gridHelper);
-        }
-
-        function handleBackgroundMusic(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                backgroundMusicURL = URL.createObjectURL(file);
-                document.getElementById('bg-music-name').innerText = file.name;
-                notify(`Background music set to ${file.name}`);
-
-                // Optional: Preview the music
-                let audio = document.getElementById('engine-bg-audio');
-                if (!audio) {
-                    audio = document.createElement('audio');
-                    audio.id = 'engine-bg-audio';
-                    audio.loop = true;
-                    document.body.appendChild(audio);
-                }
-                audio.src = backgroundMusicURL;
-                audio.play().catch(e => console.log("Auto-play blocked, music will play in-game."));
-            }
-        }
-
-        function handleMeshImport(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    try {
-                        const jsonData = JSON.parse(e.target.result);
-                        add3DObject('custom', jsonData);
-                        notify(`Imported mesh: ${file.name}`);
-                    } catch (err) {
-                        notify("Error parsing JSON mesh file");
-                        console.error(err);
-                    }
-                };
-                reader.readAsText(file);
-            }
-        }
-
-        function addAsset(type) {
-            notify(`Added ${type} asset to scene`);
-            // In a real implementation, this would add the actual asset to the scene
-        }
-
-        function add3DObject(type, data) {
-            if (!is3DInitialized) init3DStudio();
-
-            const id = Date.now();
-            let geometry;
-            if (type === 'box') geometry = new THREE.BoxGeometry(1, 1, 1);
-            else if (type === 'sphere') geometry = new THREE.SphereGeometry(0.7, 32, 32);
-            else if (type === 'torus') geometry = new THREE.TorusGeometry(0.5, 0.2, 16, 100);
-            else if (type === 'player') geometry = new THREE.CapsuleGeometry(0.5, 1, 4, 8);
-            else if (type === 'custom' && data) {
-                try {
-                    // Try parsing as BufferGeometry
-                    const loader = new THREE.BufferGeometryLoader();
-                    geometry = loader.parse(data);
-                } catch (e) {
-                    // Fallback to basic Box if it fails
-                    console.error("Failed to parse custom geometry, using box fallback", e);
-                    geometry = new THREE.BoxGeometry(1, 1, 1);
-                }
-            }
-
-            const material = new THREE.MeshStandardMaterial({ color: type === 'player' ? 0x00ff00 : 0xff0000 });
-            const mesh = new THREE.Mesh(geometry, material);
-
-            const obj = {
-                id,
-                type,
-                customData: type === 'custom' ? data : null,
-                name: type.charAt(0).toUpperCase() + type.slice(1) + "_" + engineObjects.length,
-                pos: { x: 0, y: type === 'player' ? 1 : 0.5, z: 0 },
-                rot: { x: 0, y: 0, z: 0 },
-                scale: { x: 1, y: 1, z: 1 },
-                color: type === 'player' ? '#00ff00' : '#ff0000',
-                speed: type === 'player' ? 0.1 : undefined,
-                jumpStrength: type === 'player' ? 0.2 : undefined,
-                viewMode: type === 'player' ? 'first' : undefined,
-                mesh: mesh
-            };
-
-            mesh.userData.id = id;
-            scene.add(mesh);
-            engineObjects.push(obj);
-            selectObject(id);
-            refreshHierarchy();
-        }
-
-        function selectObject(id) {
-            selectedId = id;
-            engineObjects.forEach(o => {
-                if (o.id === id) {
-                    o.mesh.material.emissive = new THREE.Color(0x444444);
-                } else {
-                    o.mesh.material.emissive = new THREE.Color(0x000000);
-                }
-            });
-            refreshHierarchy();
-            updateInspector();
-        }
-
-        function refreshHierarchy() {
-            const hierarchy = document.getElementById('hierarchy-list');
-            if (!hierarchy) return;
-
-            hierarchy.innerHTML = engineObjects.map(obj => `
-                <div 
-                    onclick="selectObject(${obj.id})"
-                    class="group flex items-center justify-between px-3 py-2 rounded cursor-pointer transition ${selectedId === obj.id ? 'bg-red-500/20 text-red-500 border border-red-500/30' : 'hover:bg-zinc-800 text-zinc-400'}"
-                >
-                    <div class="flex items-center gap-2 text-[11px] font-bold uppercase tracking-tighter">
-                        <i data-lucide="${obj.type === 'box' ? 'box' : (obj.type === 'sphere' ? 'circle' : (obj.type === 'torus' ? 'donut' : (obj.type === 'custom' ? 'file-json' : 'user')))}" class="w-3 h-3"></i>
-                        ${obj.name}
-                    </div>
-                    <button onclick="delete3DObject(${obj.id}); event.stopPropagation();" class="opacity-0 group-hover:opacity-100 text-zinc-600 hover:text-red-500 transition">
-                        <i data-lucide="x" class="w-3 h-3"></i>
-                    </button>
-                </div>
-            `).join('');
-
-            if (window.lucide) lucide.createIcons();
-        }
-
-        function updateInspector() {
-            const panel = document.getElementById('inspector-panel');
-            const obj = engineObjects.find(o => o.id === selectedId);
-
-            if (!obj) {
-                panel.innerHTML = `<div class="text-zinc-600 text-xs italic text-center mt-10">Select an object to edit</div>`;
-                return;
-            }
-
-            panel.innerHTML = `
-                <div class="flex flex-col gap-4 animate-in fade-in duration-300">
-                    <div class="space-y-1">
-                        <label class="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Name</label>
-                        <input type="text" value="${obj.name}" oninput="update3DProp('name', this.value)" class="w-full bg-black border border-zinc-800 rounded px-2 py-1 text-[11px] outline-none focus:border-red-500 transition">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Position (X, Y, Z)</label>
-                        <div class="grid grid-cols-3 gap-2">
-                            <input type="number" step="0.1" value="${obj.pos.x}" oninput="update3DProp('pos.x', parseFloat(this.value))" class="bg-black border border-zinc-800 rounded px-2 py-1 text-[11px] outline-none focus:border-red-500 transition">
-                            <input type="number" step="0.1" value="${obj.pos.y}" oninput="update3DProp('pos.y', parseFloat(this.value))" class="bg-black border border-zinc-800 rounded px-2 py-1 text-[11px] outline-none focus:border-red-500 transition">
-                            <input type="number" step="0.1" value="${obj.pos.z}" oninput="update3DProp('pos.z', parseFloat(this.value))" class="bg-black border border-zinc-800 rounded px-2 py-1 text-[11px] outline-none focus:border-red-500 transition">
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Rotation (Deg)</label>
-                        <div class="grid grid-cols-3 gap-2">
-                            <input type="number" value="${obj.rot.x}" oninput="update3DProp('rot.x', parseFloat(this.value))" class="bg-black border border-zinc-800 rounded px-2 py-1 text-[11px] outline-none focus:border-red-500 transition">
-                            <input type="number" value="${obj.rot.y}" oninput="update3DProp('rot.y', parseFloat(this.value))" class="bg-black border border-zinc-800 rounded px-2 py-1 text-[11px] outline-none focus:border-red-500 transition">
-                            <input type="number" value="${obj.rot.z}" oninput="update3DProp('rot.z', parseFloat(this.value))" class="bg-black border border-zinc-800 rounded px-2 py-1 text-[11px] outline-none focus:border-red-500 transition">
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Scale</label>
-                        <div class="grid grid-cols-3 gap-2">
-                            <input type="number" step="0.1" value="${obj.scale.x}" oninput="update3DProp('scale.x', parseFloat(this.value))" class="bg-black border border-zinc-800 rounded px-2 py-1 text-[11px] outline-none focus:border-red-500 transition">
-                            <input type="number" step="0.1" value="${obj.scale.y}" oninput="update3DProp('scale.y', parseFloat(this.value))" class="bg-black border border-zinc-800 rounded px-2 py-1 text-[11px] outline-none focus:border-red-500 transition">
-                            <input type="number" step="0.1" value="${obj.scale.z}" oninput="update3DProp('scale.z', parseFloat(this.value))" class="bg-black border border-zinc-800 rounded px-2 py-1 text-[11px] outline-none focus:border-red-500 transition">
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Color</label>
-                        <div class="flex gap-2">
-                            <input type="color" value="${obj.color}" oninput="update3DProp('color', this.value)" class="w-10 h-8 bg-black border border-zinc-800 rounded cursor-pointer p-1">
-                            <input type="text" value="${obj.color}" oninput="update3DProp('color', this.value)" class="flex-grow bg-black border border-zinc-800 rounded px-2 py-1 text-[11px] outline-none focus:border-red-500 transition">
-                        </div>
-                    </div>
-                    ${obj.type === 'player' ? `
-                    <div class="border-t border-zinc-800 pt-4 mt-2 space-y-4">
-                        <h4 class="text-[10px] font-bold text-red-500 uppercase tracking-widest">Player Settings</h4>
-                        <div class="space-y-1">
-                            <label class="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Speed</label>
-                            <input type="number" step="0.01" value="${obj.speed}" oninput="update3DProp('speed', parseFloat(this.value))" class="w-full bg-black border border-zinc-800 rounded px-2 py-1 text-[11px] outline-none focus:border-red-500 transition">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-[9px] text-zinc-500 uppercase font-black tracking-widest">Jump Strength</label>
-                            <input type="number" step="0.01" value="${obj.jumpStrength}" oninput="update3DProp('jumpStrength', parseFloat(this.value))" class="w-full bg-black border border-zinc-800 rounded px-2 py-1 text-[11px] outline-none focus:border-red-500 transition">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-[9px] text-zinc-500 uppercase font-black tracking-widest">View Mode</label>
-                            <select onchange="update3DProp('viewMode', this.value)" class="w-full bg-black border border-zinc-800 rounded px-2 py-1 text-[11px] outline-none focus:border-red-500 transition">
-                                <option value="first" ${obj.viewMode === 'first' ? 'selected' : ''}>First Person</option>
-                                <option value="third" ${obj.viewMode === 'third' ? 'selected' : ''}>Third Person</option>
-                            </select>
-                        </div>
-                    </div>
-                    ` : ''}
-                    <button onclick="delete3DObject(${obj.id})" class="mt-4 w-full bg-red-950/30 border border-red-900/50 text-red-500 py-2 rounded text-[10px] font-bold hover:bg-red-600 hover:text-white transition flex items-center justify-center gap-2">
-                        <i data-lucide="trash-2" class="w-3 h-3"></i> Delete Object
-                    </button>
-                </div>
-            `;
-            lucide.createIcons();
-        }
-
-        function update3DProp(path, val) {
-            const obj = engineObjects.find(o => o.id === selectedId);
-            if (!obj) return;
-
-            if (path === 'name') obj.name = val;
-            else if (path === 'color') {
-                obj.color = val;
-                obj.mesh.material.color.set(val);
-            } else if (path === 'speed' || path === 'jumpStrength' || path === 'viewMode') {
-                obj[path] = val;
-            } else {
-                const parts = path.split('.');
-                if (parts[0] === 'pos') {
-                    obj.pos[parts[1]] = val;
-                    obj.mesh.position[parts[1]] = val;
-                } else if (parts[0] === 'rot') {
-                    obj.rot[parts[1]] = val;
-                    obj.mesh.rotation[parts[1]] = val * (Math.PI / 180);
-                } else if (parts[0] === 'scale') {
-                    obj.scale[parts[1]] = val;
-                    obj.mesh.scale[parts[1]] = val;
-                }
-            }
-            refreshHierarchy();
-        }
-
-        function delete3DObject(id) {
-            const idx = engineObjects.findIndex(o => o.id === id);
-            if (idx !== -1) {
-                scene.remove(engineObjects[idx].mesh);
-                engineObjects.splice(idx, 1);
-            }
-            if (selectedId === id) selectedId = null;
-            refreshHierarchy();
-            updateInspector();
-        }
-
-        function runVisualGame() {
-            const html = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"><\/script>
-                    <style>body { margin: 0; overflow: hidden; background: #000; }</style>
-                </head>
-                <body>
-                    ${backgroundMusicURL ? `<audio src="${backgroundMusicURL}" autoplay loop></audio>` : ''}
-                    <script>
-                        const scene = new THREE.Scene();
-                        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-                        const renderer = new THREE.WebGLRenderer({ antialias: true });
-                        renderer.setSize(window.innerWidth, window.innerHeight);
-                        document.body.appendChild(renderer.domElement);
-
-                        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-                        scene.add(ambientLight);
-                        const light = new THREE.PointLight(0xffffff, 1);
-                        light.position.set(5, 5, 5);
-                        scene.add(light);
-
-                        camera.position.set(5, 5, 5);
-                        camera.lookAt(0,0,0);
-
-                        const keys = {};
-                        window.addEventListener('keydown', e => keys[e.code] = true);
-                        window.addEventListener('keyup', e => keys[e.code] = false);
-
-                        let playerObj = null;
-
-                        ${engineObjects.map(obj => `
-                            {
-                                let geo;
-                                if("${obj.type}" === "box") geo = new THREE.BoxGeometry(1, 1, 1);
-                                else if("${obj.type}" === "sphere") geo = new THREE.SphereGeometry(0.7, 32, 32);
-                                else if("${obj.type}" === "torus") geo = new THREE.TorusGeometry(0.5, 0.2, 16, 100);
-                                else if("${obj.type}" === "player") geo = new THREE.CapsuleGeometry(0.5, 1, 4, 8);
-                                else if("${obj.type}" === "custom") {
-                                    const loader = new THREE.BufferGeometryLoader();
-                                    geo = loader.parse(${JSON.stringify(obj.customData)});
-                                }
-                                
-                                const mat = new THREE.MeshStandardMaterial({ color: "${obj.color}" });
-                                const mesh = new THREE.Mesh(geo, mat);
-                                mesh.position.set(${obj.pos.x}, ${obj.pos.y}, ${obj.pos.z});
-                                mesh.rotation.set(${obj.rot.x * (Math.PI / 180)}, ${obj.rot.y * (Math.PI / 180)}, ${obj.rot.z * (Math.PI / 180)});
-                                mesh.scale.set(${obj.scale.x}, ${obj.scale.y}, ${obj.scale.z});
-                                scene.add(mesh);
-                                
-                                if("${obj.type}" === "player") {
-                                    playerObj = {
-                                        mesh,
-                                        speed: ${obj.speed || 0.1},
-                                        jumpStrength: ${obj.jumpStrength || 0.2},
-                                        viewMode: "${obj.viewMode || 'first'}",
-                                        velocity: new THREE.Vector3()
-                                    };
-                                }
-                                // Removed auto-rotation for all objects
-                            }
-                        `).join('')}
-
-                        function animate() {
-                            requestAnimationFrame(animate);
-
-                            if (playerObj) {
-                                // Movement
-                                if (keys['KeyW']) playerObj.mesh.translateZ(-playerObj.speed);
-                                if (keys['KeyS']) playerObj.mesh.translateZ(playerObj.speed);
-                                if (keys['KeyA']) playerObj.mesh.translateX(-playerObj.speed);
-                                if (keys['KeyD']) playerObj.mesh.translateX(playerObj.speed);
-                                
-                                if (playerObj.viewMode === 'first') {
-                                    camera.position.copy(playerObj.mesh.position);
-                                    camera.position.y += 0.5;
-                                    camera.rotation.copy(playerObj.mesh.rotation);
-                                } else {
-                                    const offset = new THREE.Vector3(0, 3, 5);
-                                    offset.applyQuaternion(playerObj.mesh.quaternion);
-                                    camera.position.copy(playerObj.mesh.position).add(offset);
-                                    camera.lookAt(playerObj.mesh.position);
-                                }
-                            }
-
-                            renderer.render(scene, camera);
-                        }
-                        animate();
-                        window.addEventListener('resize', () => {
-                            camera.aspect = window.innerWidth / window.innerHeight;
-                            camera.updateProjectionMatrix();
-                            renderer.setSize(window.innerWidth, window.innerHeight);
-                        });
-                    <\/script>
-                </body>
-                </html>
-            `;
-            playCode(html, document.getElementById('game-title').value || "Epsilon 3D Experience");
-        }
-
-        function saveVisualProject() {
-            const title = document.getElementById('game-title').value.trim() || "Untitled 3D Project";
-            if (engineObjects.length === 0) return notify("Add some 3D objects first.");
-
-            const serializableData = engineObjects.map(o => ({
-                type: o.type,
-                name: o.name,
-                pos: o.pos,
-                rot: o.rot,
-                scale: o.scale,
-                color: o.color,
-                speed: o.speed,
-                jumpStrength: o.jumpStrength,
-                viewMode: o.viewMode
-            }));
-
-            const projects = JSON.parse(localStorage.getItem('epsilon_projects') || '[]');
-            projects.push({
-                id: Date.now(),
-                title: title,
-                type: '3d',
-                data: serializableData,
-                date: new Date().toLocaleDateString(),
-                author: currentUser ? currentUser.username : 'Guest'
-            });
-
-            localStorage.setItem('epsilon_projects', JSON.stringify(projects));
-            notify(`"${title}" saved as 3D Project!`);
-        }
-
-        function clearPreview() {
-            engineObjects.forEach(o => scene.remove(o.mesh));
-            engineObjects = [];
-            selectedId = null;
-            refreshHierarchy();
-            updateInspector();
-        }
-
-        // --- Built-in Games Data ---
-
-        function loadLibrary() {
-            const list = document.getElementById('library-list');
-            const projects = JSON.parse(localStorage.getItem('epsilon_projects') || '[]');
-
-            if (projects.length === 0) {
-                list.innerHTML = `<div class="col-span-full text-zinc-600 italic">No games created yet. Stop being lazy and create.</div>`;
-                return;
-            }
-
-            list.innerHTML = projects.map(p => `
-                <div class="bg-zinc-900 border border-zinc-800 p-4 md:p-5 rounded-lg flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-bold text-lg text-red-500">${p.title}</h3>
-                            <span class="text-[8px] bg-red-600 px-2 py-0.5 rounded text-white font-black uppercase tracking-widest">
-                                ${p.type === '3d' ? '3D Studio' : (p.type === 'visual' ? 'Studio' : 'Code')}
-                            </span>
-                        </div>
-                        <p class="text-[10px] text-zinc-600 uppercase tracking-tighter mb-4">${p.date} ${p.author ? 'by ' + p.author : ''}</p>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="playProject(${p.id})" class="flex-grow bg-white text-black text-xs font-black py-2 rounded hover:bg-zinc-100 transition flex items-center justify-center gap-1">
-                            <i data-lucide="play" class="w-3 h-3"></i> PLAY
-                        </button>
-                        <button onclick="deleteProject(${p.id})" class="bg-zinc-800 text-red-500 px-3 py-2 rounded hover:bg-red-600 hover:text-white transition">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function deleteProject(id) {
-            let projects = JSON.parse(localStorage.getItem('epsilon_projects') || '[]');
-            projects = projects.filter(p => p.id !== id);
-            localStorage.setItem('epsilon_projects', JSON.stringify(projects));
-            loadLibrary();
-            notify("Project deleted successfully.");
-        }
-
-        function playProject(id) {
-            const projects = JSON.parse(localStorage.getItem('epsilon_projects') || '[]');
-            const project = projects.find(p => p.id === id);
-            if (project) {
-                if (project.type === '3d') {
-                    // Load 3D data back into engine
-                    if (!is3DInitialized) init3DStudio();
-                    clearPreview();
-                    project.data.forEach(d => {
-                        add3DObject(d.type, d.customData);
-                        const obj = engineObjects[engineObjects.length - 1];
-                        obj.name = d.name;
-                        update3DProp('pos.x', d.pos.x); update3DProp('pos.y', d.pos.y); update3DProp('pos.z', d.pos.z);
-                        update3DProp('rot.x', d.rot.x); update3DProp('rot.y', d.rot.y); update3DProp('rot.z', d.rot.z);
-                        update3DProp('scale.x', d.scale.x); update3DProp('scale.y', d.scale.y); update3DProp('scale.z', d.scale.z);
-                        update3DProp('color', d.color);
-                    });
-                    runVisualGame();
-                } else if (project.type === 'visual') {
-                    engineObjects = project.data;
-                    runVisualGame();
-                } else {
-                    playCode(project.code, project.title);
-                }
-            }
-        }
-
-        function playCode(code, title) {
-            showPage('player');
-            document.getElementById('current-playing-title').innerHTML = `<span>${title}</span>`;
-            const viewport = document.getElementById('game-viewport');
-            const blob = new Blob([code], { type: 'text/html' });
-            viewport.src = URL.createObjectURL(blob);
-        }
-
-        // --- Built-in Games Data ---
-        const games = {
-            snake: {
-                title: "Neon Serpent",
-                code: `
-                <!DOCTYPE html><html><body style="background:#000;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;overflow:hidden;font-family:sans-serif;color:white;">
-                <canvas id="g" width="400" height="400" style="border:5px solid #f00"></canvas>
-                <div style="position:absolute;top:20px;left:20px;">Score: <span id="s">0</span></div>
-                <script>
-                const c=document.getElementById("g"),x=c.getContext("2d");let s=0,ps=20,t=0,l=20,ax=15,ay=15,xv=yv=0,tr=[],tl=5;
-                function game(){px+=xv;py+=yv;if(px<0)px=l-1;if(px>l-1)px=0;if(py<0)py=l-1;if(py>l-1)py=0;x.fillStyle="black";x.fillRect(0,0,c.width,c.height);
-                x.fillStyle="red";for(let i=0;i<tr.length;i++){x.fillRect(tr[i].x*ps,tr[i].y*ps,ps-2,ps-2);if(tr[i].x==px&&tr[i].y==py)tl=5;}
-                tr.push({x:px,y:py});while(tr.length>tl)tr.shift();if(ax==px&&ay==py){tl++;s+=10;document.getElementById("s").innerText=s;ax=Math.floor(Math.random()*l);ay=Math.floor(Math.random()*l);}
-                x.fillStyle="white";x.fillRect(ax*ps,ay*ps,ps-2,ps-2);}
-                let px=py=10;setInterval(game,1000/15);
-                window.onkeydown=e=>{switch(e.keyCode){case 37:xv=-1;yv=0;break;case 38:xv=0;yv=-1;break;case 39:xv=1;yv=0;break;case 40:xv=0;yv=1;break;}};
-                <\/script></body></html>`
-            },
-            clicker: {
-                title: "Epsilon Clicker",
-                code: `
-                <!DOCTYPE html><html><body style="background:radial-gradient(circle, #200, #000);color:white;display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;margin:0;font-family:sans-serif;">
-                <h1 style="font-size:4rem;margin:0;" id="score">0</h1>
-                <p>EP-COINS</p>
-                <button id="btn" style="width:200px;height:200px;border-radius:50%;border:none;background:#f00;box-shadow:0 0 50px rgba(255,0,0,0.5);cursor:pointer;font-size:5rem;outline:none;">💀</button>
-                <script>
-                let s=0;document.getElementById('btn').onclick=()=>{s++;document.getElementById('score').innerText=s;document.getElementById('btn').style.transform='scale(0.95)';setTimeout(()=>document.getElementById('btn').style.transform='scale(1)',50);};
-                <\/script></body></html>`
-            }
-        };
-
-        function playInternal(key) {
-            const g = games[key];
-            playCode(g.code, g.title);
-        }
-
-        function toggleFullscreen() {
-            const viewport = document.getElementById('game-viewport');
-            if (viewport.requestFullscreen) viewport.requestFullscreen();
-            else if (viewport.webkitRequestFullscreen) viewport.webkitRequestFullscreen();
-        }
-
-        // Hide loading screen
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                document.getElementById('loading-screen').classList.add('fade-out');
-            }, 500);
-        });
-
-        // Init
-        initAccountSystem();
-        showPage('discover');
-
-        // Initialize Lucide icons
+        // Initialize Lucide Icons
         lucide.createIcons();
 
-        // Re-initialize icons when content changes
-        const originalShowPage = showPage;
-        showPage = function (pageId) {
-            originalShowPage(pageId);
-            setTimeout(() => lucide.createIcons(), 50);
-        };
+        // --- REAL API SETUP ---
+        // We use FreeToGame API via AllOrigins proxy to bypass CORS restrictions
+        const categories = ['All', 'Action', 'RPG', 'Shooter', 'Strategy', 'Sports'];
 
-        const originalLoadLibrary = loadLibrary;
-        loadLibrary = function () {
-            originalLoadLibrary();
-            setTimeout(() => lucide.createIcons(), 50);
-        };
-        // --- EPSILON BLACK SCREEN FIX ---
-        // Overrides the existing showPage function to force a resize
-        const _originalShowPage = showPage;
-        showPage = function (pageId) {
-            _originalShowPage(pageId);
+        // Simulate API Fetch
+        const fetchGamesAPI = async (category = 'All') => {
+            const baseUrl = 'https://www.freetogame.com/api/games';
+            // Fix: FreeToGame specifically wants 'tag' for categories, not 'category' in some endpoints
+            const url = category === 'All' ? baseUrl : `${baseUrl}?category=${category.toLowerCase()}`;
 
-            // If we are going to engine and it's already built, force a resize
-            if (pageId === 'engine' && typeof is3DInitialized !== 'undefined' && is3DInitialized) {
-                setTimeout(() => {
-                    const container = document.getElementById('editor-viewport');
-                    if (container && camera && renderer) {
-                        camera.aspect = container.clientWidth / container.clientHeight;
-                        camera.updateProjectionMatrix();
-                        renderer.setSize(container.clientWidth, container.clientHeight);
-                    }
-                }, 50); // Small delay to let the div become visible first
+            // Using a different proxy (Cors-anywhere or similar) or fixing the AllOrigins parsing
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+
+            try {
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const data = await response.json();
+
+                // AllOrigins returns the API response as a STRING inside data.contents
+                // We need to parse that string back into an Object/Array
+                const games = JSON.parse(data.contents);
+
+                if (!Array.isArray(games)) {
+                    throw new Error("Data is not an array");
+                }
+
+                return games.slice(0, 20);
+            } catch (error) {
+                console.error("API Error:", error);
+                // Fallback: If the API fails, return an empty array so the UI shows the 'Empty' state
+                return [];
             }
         };
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Epsilon Heckle SW is live, bestie! 🚀', reg))
-                    .catch(err => console.log('SW failed to spawn. 💀', err));
+        // --- UI LOGIC ---
+        const elements = {
+            grid: document.getElementById('game-grid'),
+            loader: document.getElementById('loading-state'),
+            empty: document.getElementById('empty-state'),
+            filters: document.getElementById('category-filters'),
+            status: document.getElementById('api-status')
+        };
+
+        let currentCategory = 'All';
+
+        // Render Filter Buttons
+        function renderFilters() {
+            elements.filters.innerHTML = '';
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                const isActive = cat === currentCategory;
+                btn.className = `whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-bold uppercase tracking-wider transition-all border ${isActive ? 'bg-brand-red text-white border-brand-red shadow-[0_0_10px_rgba(229,9,20,0.4)]' : 'bg-transparent text-gray-400 border-gray-700 hover:border-brand-red hover:text-white'}`;
+                btn.innerText = cat;
+                btn.onclick = () => loadGames(cat);
+                elements.filters.appendChild(btn);
             });
         }
+
+        // Render Game Card
+        function createGameCard(game) {
+            const isNew = game.release_date && new Date(game.release_date) > new Date('2023-01-01');
+            return `
+                <div class="bg-brand-gray border border-gray-800 rounded-lg overflow-hidden transition-all duration-300 transform hover:-translate-y-2 glow-hover group cursor-pointer">
+                    <div class="relative h-48 overflow-hidden">
+                        <img src="${game.thumbnail}" alt="${game.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-80 group-hover:opacity-100">
+                        ${isNew ? '<span class="absolute top-2 left-2 bg-brand-red text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">New</span>' : ''}
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                             <a href="${game.game_url}" target="_blank" class="block w-full text-center bg-brand-red hover:bg-red-700 text-white font-gaming py-2 rounded text-sm uppercase tracking-wide">Play Game</a>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-lg font-bold text-white font-gaming uppercase truncate pr-2" title="${game.title}">${game.title}</h3>
+                            <span class="bg-gray-800 text-gray-300 text-[10px] px-2 py-0.5 rounded border border-gray-700 whitespace-nowrap">${game.genre}</span>
+                        </div>
+                        <div class="flex items-center text-xs text-gray-500 gap-3">
+                            <span class="flex items-center gap-1"><i data-lucide="monitor" class="w-3 h-3"></i> ${game.platform.includes('PC') ? 'PC' : 'Web'}</span>
+                            <span class="flex items-center gap-1"><i data-lucide="code" class="w-3 h-3"></i> ${game.developer}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Main Load Function
+        async function loadGames(category = 'All') {
+            currentCategory = category;
+            renderFilters(); // Update active state
+
+            // Show loading, hide others
+            elements.grid.classList.add('hidden');
+            elements.empty.classList.add('hidden');
+            elements.loader.classList.remove('hidden');
+            elements.status.classList.add('hidden');
+
+            try {
+                // Fetch data (simulated)
+                const games = await fetchGamesAPI(category);
+
+                elements.loader.classList.add('hidden');
+                elements.status.classList.remove('hidden');
+
+                if (games.length === 0) {
+                    elements.empty.classList.remove('hidden');
+                } else {
+                    // Render grid
+                    elements.grid.innerHTML = games.map(createGameCard).join('');
+                    elements.grid.classList.remove('hidden');
+                    lucide.createIcons(); // Re-init icons for new HTML
+                }
+            } catch (error) {
+                console.error("API Error:", error);
+                elements.loader.innerHTML = '<p class="text-red-500 font-mono">API Connection Failed.</p>';
+            }
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadGames();
+        });
+if('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+    .then(registration => {
+        console.log('Service Worker registered with scope:', registration.scope);
+    })
+    .catch(error => {
+        console.error('Service Worker registration failed:', error);
+    });
+}
     </script>
 </body>
 
