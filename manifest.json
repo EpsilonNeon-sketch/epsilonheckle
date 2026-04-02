@@ -1,0 +1,17 @@
+{"name":"Epsilon Heckle | Play & Create",
+"short_name":"Epsilon Heckle",
+"version": 1.0,
+"description":"A powerful 3D game creation and playing platform featuring integrated studio tools and a custom physics engine.",
+"start_url":"/",
+"display":"standalone",
+"background_color":"#0a0a0a",
+"theme_color":"#ff0000",
+"icons":[
+    {"src":"./epsilon-heckle-logo.png",
+    "sizes":"192x192",
+    "type":"image/png"},
+{"src":"./epsilon-heckle-logo.png",
+"sizes":"512x512",
+"type":"image/png"}
+]
+}
